@@ -1,6 +1,13 @@
 .PHONY: linux upload
 
 all: upload nor_ipl
+
+bootstrap:
+	git clone git@github.com:fifteenhex/linux.git
+	git -C linux checkout -b msc313e
+	git clone git@github.com:fifteenhex/u-boot.git
+	git -C u-boot checkout -b msc313
+
 linux:
 	- rm linux/arch/arm/boot/zImage
 	$(MAKE) -C linux ARCH=arm -j8 CROSS_COMPILE=arm-linux-gnueabihf- zImage dtbs
