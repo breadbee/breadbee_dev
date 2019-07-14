@@ -1,7 +1,7 @@
 /dts-v1/;
 
 / {
-	description = "dogedoge firmware";
+	description = "breadbee dev";
 	#address-cells = <1>;
 
 	images {
@@ -46,6 +46,7 @@
 				algo = "sha1";
 			};
 		};
+		/include/ "../breadbee_buildroot/buildroot/output/images/breadbee-overlays/fdtlist"
 	};
 
 	configurations {
@@ -58,5 +59,6 @@
 			kernel = "kernel@0";
 			fdt = "fdt@1";
 		};
+		/include/ "../breadbee_buildroot/buildroot/output/images/breadbee-overlays/configlist"
 	};
 };
