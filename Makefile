@@ -10,7 +10,7 @@ bootstrap:
 
 linux:
 	- rm linux/arch/arm/boot/zImage
-	$(MAKE) -C linux ARCH=arm -j8 CROSS_COMPILE=arm-linux-gnueabihf- zImage dtbs
+	$(MAKE) -C linux DTC_FLAGS=--symbols ARCH=arm -j8 CROSS_COMPILE=arm-linux-gnueabihf- zImage dtbs
 	# these are for booting with the old mstar u-boot that can't load a dtb
 	cat linux/arch/arm/boot/zImage linux/arch/arm/boot/dts/msc313e-breadbee.dtb >\
 		linux/arch/arm/boot/zImage.msc313e
