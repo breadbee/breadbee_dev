@@ -1,5 +1,8 @@
 .PHONY: linux upload
 
+BUILDROOT=$(shell realpath ../breadbee_buildroot/buildroot)
+CROSS_COMPILE=arm-buildroot-linux-gnueabihf-
+
 all: upload nor_ipl
 
 bootstrap:
@@ -10,7 +13,7 @@ bootstrap:
 
 linux:
 	- rm linux/arch/arm/boot/zImage
-	$(MAKE) -C linux DTC_FLAGS=--symbols ARCH=arm -j8 CROSS_COMPILE=arm-linux-gnueabihf- zImage dtbs
+	PATH=$(BUILDROOT)/output/host/bin:$$PATH $(MAKE) -C linux DTC_FLAGS=--symbols ARCH=arm -j8 CROSS_COMPILE=$(CROSS_COMPILE) zImage dtbs
 	# these are for booting with the old mstar u-boot that can't load a dtb
 	cat linux/arch/arm/boot/zImage linux/arch/arm/boot/dts/msc313e-breadbee.dtb >\
 		linux/arch/arm/boot/zImage.msc313e
@@ -63,5 +66,14 @@ nor: uboot kernel.fit
 kernel.fit: linux
 	mkimage -f kernel.its kernel.fit
 
-clean:
+clean: linux_clean
 	rm -rf kernel.fit nor nor_ipl
+
+push_linux_config:
+	cp linux/.config ../breadbee_buildroot/br2breadbee/board/thingyjp/breadbee/linux.config
+
+fix_brick:
+	flashrom --programmer ch341a_spi -w nor_ipl -l /media/junk/hardware/breadbee/flashrom_layout -i ipl_uboot_spl -N
+
+buildroot:
+	$(MAKE) -C ../breadbee_buildroot
