@@ -1,9 +1,14 @@
-.PHONY: linux upload
+OUTPUTS=../breadbee_buildroot/outputs/
+
+.PHONY: linux upload outputdir
 
 BUILDROOT=$(shell realpath ../breadbee_buildroot/buildroot)
 CROSS_COMPILE=arm-buildroot-linux-gnueabihf-
 
 all: upload nor_ipl
+
+outputsdir:
+	mkdir -p $(OUTPUTS)
 
 bootstrap:
 	git clone git@github.com:fifteenhex/linux.git
@@ -13,22 +18,26 @@ bootstrap:
 
 linux:
 	- rm linux/arch/arm/boot/zImage
-	PATH=$(BUILDROOT)/output/host/bin:$$PATH $(MAKE) -C linux DTC_FLAGS=--symbols ARCH=arm -j8 CROSS_COMPILE=$(CROSS_COMPILE) zImage dtbs
+	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
+		$(MAKE) -C linux DTC_FLAGS=--symbols \
+		ARCH=arm -j8 CROSS_COMPILE=$(CROSS_COMPILE) zImage dtbs
 	# these are for booting with the old mstar u-boot that can't load a dtb
-	cat linux/arch/arm/boot/zImage linux/arch/arm/boot/dts/msc313e-breadbee.dtb >\
-		linux/arch/arm/boot/zImage.msc313e
-	cat linux/arch/arm/boot/zImage linux/arch/arm/boot/dts/msc313d-mc400l.dtb >\
-		linux/arch/arm/boot/zImage.msc313d
+	cat linux/arch/arm/boot/zImage linux/arch/arm/boot/dts/msc313e-breadbee.dtb > \
+		$(OUTPUTS)/zImage.msc313e
+	cat linux/arch/arm/boot/zImage linux/arch/arm/boot/dts/msc313d-mc400l.dtb > \
+		$(OUTPUTS)/zImage.msc313d
 
 linux_config:
-	$(MAKE) -C linux ARCH=arm -j8 CROSS_COMPILE=arm-linux-gnueabihf- menuconfig
+	$(MAKE) -C linux ARCH=arm -j8 menuconfig
 
 linux_clean:
-	$(MAKE) -C linux ARCH=arm -j8 CROSS_COMPILE=arm-linux-gnueabihf- clean
+	$(MAKE) -C linux ARCH=arm -j8 clean
 
 uboot:
-	$(MAKE) -C u-boot msc313_breadbee_defconfig
-	$(MAKE) -C u-boot CROSS_COMPILE=arm-linux-gnueabihf- -j12
+	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
+		$(MAKE) -C u-boot msc313_breadbee_defconfig
+	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
+		$(MAKE) -C u-boot CROSS_COMPILE=$(CROSS_COMPILE) -j8
 
 
 # this is to upload the resulting binaries to a tftp server to load on the
@@ -63,8 +72,9 @@ nor: uboot kernel.fit
 
 # this builds a FIT image with the kernel and the right device trees. This
 # should be used with the new u-boot.
-kernel.fit: linux
+kernel.fit: outputsdir linux
 	mkimage -f kernel.its kernel.fit
+	cp $@ $(OUTPUTS)/dev_$@
 
 clean: linux_clean
 	rm -rf kernel.fit nor nor_ipl
@@ -73,7 +83,8 @@ push_linux_config:
 	cp linux/.config ../breadbee_buildroot/br2breadbee/board/thingyjp/breadbee/linux.config
 
 fix_brick:
-	flashrom --programmer ch341a_spi -w nor_ipl -l /media/junk/hardware/breadbee/flashrom_layout -i ipl_uboot_spl -N
+	sudo flashrom --programmer ch341a_spi -w nor_ipl -l /media/junk/hardware/breadbee/flashrom_layout -i ipl_uboot_spl -N
+	sudo flashrom --programmer ch341a_spi -w nor_ipl -l /media/junk/hardware/breadbee/flashrom_layout -i uboot -N
 
 buildroot:
 	$(MAKE) -C ../breadbee_buildroot
