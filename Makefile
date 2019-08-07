@@ -38,7 +38,11 @@ uboot:
 		$(MAKE) -C u-boot msc313_breadbee_defconfig
 	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
 		$(MAKE) -C u-boot CROSS_COMPILE=$(CROSS_COMPILE) -j8
+	cp u-boot/u-boot.img $(OUTPUTS)/dev_u-boot.img
 
+uboot_clean:
+	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
+		$(MAKE) -C u-boot clean
 
 # this is to upload the resulting binaries to a tftp server to load on the
 # target
