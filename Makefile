@@ -5,7 +5,7 @@ OUTPUTS=../breadbee_buildroot/outputs/
 BUILDROOT=$(shell realpath ../breadbee_buildroot/buildroot)
 CROSS_COMPILE=arm-buildroot-linux-gnueabihf-
 
-all: upload nor_ipl
+all: nor_ipl
 
 outputsdir:
 	mkdir -p $(OUTPUTS)
@@ -22,10 +22,10 @@ linux:
 		$(MAKE) -C linux DTC_FLAGS=--symbols \
 		ARCH=arm -j8 CROSS_COMPILE=$(CROSS_COMPILE) zImage dtbs
 	# these are for booting with the old mstar u-boot that can't load a dtb
-	cat linux/arch/arm/boot/zImage linux/arch/arm/boot/dts/msc313e-breadbee.dtb > \
-		$(OUTPUTS)/zImage.msc313e
-	cat linux/arch/arm/boot/zImage linux/arch/arm/boot/dts/msc313d-mc400l.dtb > \
-		$(OUTPUTS)/zImage.msc313d
+	#cat linux/arch/arm/boot/zImage linux/arch/arm/boot/dts/msc313e-breadbee.dtb > \
+	#	$(OUTPUTS)/zImage.msc313e
+	#cat linux/arch/arm/boot/zImage linux/arch/arm/boot/dts/msc313d-mc400l.dtb > \
+	#	$(OUTPUTS)/zImage.msc313d
 
 linux_config:
 	$(MAKE) -C linux ARCH=arm -j8 menuconfig
@@ -48,7 +48,7 @@ uboot_clean:
 # target
 upload: linux uboot kernel.fit
 	scp linux/arch/arm/boot/zImage.msc313e tftp:/srv/tftp/zImage.msc313e
-	scp linux/arch/arm/boot/dts/msc313e-breadbee.dtb tftp:/srv/tftp/msc313e-breadbee.dtb
+	scp linux/arch/arm/boot/dts/infinity3-msc313e-breadbee.dtb tftp:/srv/tftp/msc313e-breadbee.dtb
 	scp u-boot/spl/u-boot-spl.bin tftp:/srv/tftp/ubootspl.msc313e
 	scp u-boot/u-boot.img tftp:/srv/tftp/uboot.msc313e
 	scp kernel.fit tftp:/srv/tftp/kernel.fit.breadbee
