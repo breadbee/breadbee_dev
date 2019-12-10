@@ -92,3 +92,8 @@ fix_brick:
 
 buildroot:
 	$(MAKE) -C ../breadbee_buildroot
+
+rtk: uboot kernel.fit
+	dd if=/dev/zero of=rtk bs=1K count=256
+	dd conv=notrunc if=u-boot/u-boot.bin of=rtk
+	dd conv=notrunc if=kernel.fit of=rtk bs=1k seek=256
