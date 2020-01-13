@@ -21,12 +21,15 @@ setenv serverip 192.168.3.1; setenv loadaddr 0x22000000; dhcp kernel.fit.breadbe
 
 ## Via ethernet
 
-'''setenv serverip 192.168.3.235; if dhcp dev_u-boot.img; then; sf probe; sf erase 0x20000 0x50000; sf write 0x22000000 0x20000 0x50000; fi'''
+```
+setenv serverip 192.168.3.235; if dhcp dev_u-boot.img; then; sf probe; sf erase 0x20000 0x50000; sf write 0x22000000 0x20000 0x50000; fi
+```
 
 ## Via uart
 
-'''if loady ${loadaddr} 460800; then; sf probe; sf erase 0x20000 0x50000; sf write 0x22000000 0x20000 0x50000; fi'''
-
+```
+if loady ${loadaddr} 460800; then; sf probe; sf erase 0x20000 0x50000; sf write 0x22000000 0x20000 0x50000; fi
+```
 
 
 ## Testing DMA
