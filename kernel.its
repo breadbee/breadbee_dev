@@ -108,7 +108,10 @@
                         fdt = "fdt@3";
 			ramdisk = "ramdisk@0";
                 };
-
+		mercury5_nrd {
+			kernel = "kernel@0";
+                        fdt = "fdt@3";
+		};
 		/include/ "../breadbee_buildroot/buildroot/output/images/breadbee-overlays/configlist"
 	};
 };

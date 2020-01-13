@@ -1,6 +1,6 @@
 OUTPUTS=../breadbee_buildroot/outputs/
 
-.PHONY: linux upload outputdir
+.PHONY: linux upload outputdir kernel.fit
 
 BUILDROOT=$(shell realpath ../breadbee_buildroot/buildroot)
 CROSS_COMPILE=arm-buildroot-linux-gnueabihf-
@@ -56,13 +56,19 @@ upload: linux uboot kernel.fit
 #	scp buildroot/output/images/rootfs.squashfs tftp:/srv/tftp/rootfs.msc313e
 
 
+spl_padded: uboot
+	python3 u-boot/board/thingyjp/breadbee/fix_ipl_hdr.py \
+		-i u-boot/spl/u-boot-spl.bin \
+		-o spl_padded
+
 # this is a nor sized image (because flashrom doesn't support writing partial images)
 # that starts with the mstar IPL
-nor_ipl: uboot kernel.fit
+nor_ipl: uboot kernel.fit spl_padded
 	rm -f nor_ipl
 	dd if=/dev/zero ibs=1M count=16 | tr "\000" "\377" > nor_ipl
-	dd conv=notrunc if=IPL.bin of=nor_ipl bs=1k seek=16
-	dd conv=notrunc if=u-boot/spl/u-boot-spl.bin of=nor_ipl bs=1k seek=64
+	##dd conv=notrunc if=IPL.bin of=nor_ipl bs=1k seek=16
+	dd conv=notrunc if=ipl_ddr3.bin of=nor_ipl bs=1k seek=16
+	dd conv=notrunc if=spl_padded of=nor_ipl bs=1k seek=64
 	dd conv=notrunc if=u-boot/u-boot.img of=nor_ipl bs=1k seek=128
 	dd conv=notrunc if=kernel.fit of=nor_ipl bs=1k seek=512
 
@@ -80,6 +86,11 @@ kernel.fit: outputsdir linux
 	mkimage -f kernel.its kernel.fit
 	cp $@ $(OUTPUTS)/dev_$@
 
+vendor.fit: outputsdir
+	mkimage -f vendor.its vendor.fit
+	cp $@ $(OUTPUTS)/dev_$@
+
+
 clean: linux_clean
 	rm -rf kernel.fit nor nor_ipl
 
@@ -90,6 +101,11 @@ fix_brick:
 	sudo flashrom --programmer ch341a_spi -w nor_ipl -l /media/junk/hardware/breadbee/flashrom_layout -i ipl_uboot_spl -N
 	sudo flashrom --programmer ch341a_spi -w nor_ipl -l /media/junk/hardware/breadbee/flashrom_layout -i uboot -N
 
+fix_brick_spl:
+	sudo flashrom --programmer ch341a_spi -w nor -l /media/junk/hardware/breadbee/flashrom_layout -i ipl_uboot_spl -N
+	sudo flashrom --programmer ch341a_spi -w nor -l /media/junk/hardware/breadbee/flashrom_layout -i uboot -N
+
+
 buildroot:
 	$(MAKE) -C ../breadbee_buildroot
 
@@ -97,3 +113,4 @@ rtk: uboot kernel.fit
 	dd if=/dev/zero of=rtk bs=1K count=256
 	dd conv=notrunc if=u-boot/u-boot.bin of=rtk
 	dd conv=notrunc if=kernel.fit of=rtk bs=1k seek=256
+	cp rtk $(OUTPUTS)/rtk
