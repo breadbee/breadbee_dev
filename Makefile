@@ -5,7 +5,7 @@ OUTPUTS=../breadbee_buildroot/outputs/
 BUILDROOT=$(shell realpath ../breadbee_buildroot/buildroot)
 CROSS_COMPILE=arm-buildroot-linux-gnueabihf-
 
-all: nor_ipl
+all: nor_ipl spl_padded
 
 outputsdir:
 	mkdir -p $(OUTPUTS)
@@ -60,6 +60,7 @@ spl_padded: uboot
 	python3 u-boot/board/thingyjp/breadbee/fix_ipl_hdr.py \
 		-i u-boot/spl/u-boot-spl.bin \
 		-o spl_padded
+	cp spl_padded ipl
 
 # this is a nor sized image (because flashrom doesn't support writing partial images)
 # that starts with the mstar IPL
@@ -84,6 +85,10 @@ nor: uboot kernel.fit
 # should be used with the new u-boot.
 kernel.fit: outputsdir linux
 	mkimage -f kernel.its kernel.fit
+	cp $@ $(OUTPUTS)/dev_$@
+
+kernel_breadbee.fit: outputsdir linux
+	mkimage -f kernel_breadbee.its kernel_breadbee.fit
 	cp $@ $(OUTPUTS)/dev_$@
 
 vendor.fit: outputsdir

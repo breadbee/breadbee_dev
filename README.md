@@ -1,7 +1,7 @@
 # Booting the dev kernel over TFTP
 
 ```
-setenv serverip 192.168.3.235; setenv loadaddr 0x22000000; dhcp dev_kernel.fit; bootm ${loadaddr}"#"${bb_boardtype}${bb_config}
+setenv serverip 192.168.3.235; setenv loadaddr 0x22000000; dhcp dev_kernel_breadbee.fit; bootm ${loadaddr}"#"${bb_boardtype}${bb_config}
 ```
 
 # Booting the vendor kernel over TFTP
