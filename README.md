@@ -41,3 +41,9 @@ echo 1 > run; \
 sleep 10; \
 echo 0 > run
 ```
+
+# Booting the uboot + kernel fit RTK image
+
+- copy the rtk file to your SD card
+- wait until you get the uboot prompt
+- type ```bootm 0x20048000#midrive08``` and hit enter
