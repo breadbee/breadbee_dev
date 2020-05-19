@@ -15,6 +15,7 @@ bootstrap:
 	git -C linux checkout -b msc313e
 	git clone git@github.com:fifteenhex/u-boot.git
 	git -C u-boot checkout -b msc313
+	git clone git@github.com:breadbee/breadbee_buildroot.git buildroot
 
 linux:
 	- rm linux/arch/arm/boot/zImage
