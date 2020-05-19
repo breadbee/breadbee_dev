@@ -1,11 +1,24 @@
-OUTPUTS=../breadbee_buildroot/outputs/
+BUILDROOT=$(shell realpath ./buildroot)
+OUTPUTS=$(BUILDROOT)/outputs/
 
-.PHONY: linux upload outputdir kernel.fit
+.PHONY: toolchain \
+	buildroot \
+	linux \
+	upload \
+	outputdir \
+	kernel.fit
 
-BUILDROOT=$(shell realpath ../breadbee_buildroot/buildroot)
 CROSS_COMPILE=arm-buildroot-linux-gnueabihf-
 
-all: nor_ipl spl_padded
+all: toolchain nor_ipl spl_padded
+
+buildroot:
+	$(MAKE) -C $(BUILDROOT)
+
+toolchain:
+	if [ ! -e $(BUILDROOT)/buildroot/output/host/bin/arm-buildroot-linux-gnueabihf-gcc ]; then \
+		$(MAKE) buildroot; \
+	fi
 
 outputsdir:
 	mkdir -p $(OUTPUTS)
@@ -13,9 +26,10 @@ outputsdir:
 bootstrap:
 	git clone git@github.com:fifteenhex/linux.git
 	git -C linux checkout -b msc313e
-	git clone git@github.com:fifteenhex/u-boot.git
-	git -C u-boot checkout -b msc313
+	git clone git@github.com:breadbee/u-boot.git
+	git -C u-boot checkout -b m5iplwork
 	git clone git@github.com:breadbee/breadbee_buildroot.git buildroot
+	$(MAKE) -C buildroot bootstrap
 
 linux:
 	- rm linux/arch/arm/boot/zImage
@@ -34,7 +48,7 @@ linux_config:
 linux_clean:
 	$(MAKE) -C linux ARCH=arm -j8 clean
 
-uboot:
+uboot: toolchain
 	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
 		$(MAKE) -C u-boot msc313_breadbee_defconfig
 	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
@@ -110,10 +124,6 @@ fix_brick:
 fix_brick_spl:
 	sudo flashrom --programmer ch341a_spi -w nor -l /media/junk/hardware/breadbee/flashrom_layout -i ipl_uboot_spl -N
 	sudo flashrom --programmer ch341a_spi -w nor -l /media/junk/hardware/breadbee/flashrom_layout -i uboot -N
-
-
-buildroot:
-	$(MAKE) -C ../breadbee_buildroot
 
 rtk: uboot kernel.fit
 	dd if=/dev/zero of=rtk bs=1K count=256
