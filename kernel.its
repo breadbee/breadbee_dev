@@ -86,7 +86,7 @@
 			};
 		};
 		ramdisk@0 {
-			data = /incbin/("../bbbuildroot/buildroot_rescue/output/images/rootfs.cpio");
+			data = /incbin/("bbbuildroot/buildroot_rescue/output/images/rootfs.cpio");
                         type = "ramdisk";
                         arch = "arm";
 			os = "linux";
