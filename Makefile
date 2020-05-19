@@ -30,6 +30,7 @@ bootstrap:
 	git -C u-boot checkout -b m5iplwork
 	git clone git@github.com:breadbee/breadbee_buildroot.git buildroot
 	$(MAKE) -C buildroot bootstrap
+	git clone git@github.com:fifteenhex/mstarblobs.git
 
 linux:
 	- rm linux/arch/arm/boot/zImage
