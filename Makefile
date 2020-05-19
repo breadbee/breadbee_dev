@@ -28,6 +28,7 @@ outputsdir:
 bootstrap:
 	git clone git@github.com:fifteenhex/linux.git
 	git -C linux --track origin/msc313e_dev_v5_6_rebase
+	cp linux.config linux/.config
 	git clone git@github.com:breadbee/u-boot.git
 	git -C u-boot --track origin/m5iplwork
 	git clone git@github.com:breadbee/breadbee_buildroot.git $(BBBOOTROOT)
