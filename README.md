@@ -12,6 +12,10 @@ and buildroot sources by running the bootstrap target:
 make bootstrap
 ```
 
+Once this is complete any of the targets below should build. Note that the first build will
+take a long time as the toolchain and rootfs build will be triggered. Subsequent builds will
+reuse the toolchain and rootfs and will be much faster.
+
 ## Targets
 
 ### rtk
