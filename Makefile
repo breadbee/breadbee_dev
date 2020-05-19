@@ -25,9 +25,9 @@ outputsdir:
 
 bootstrap:
 	git clone git@github.com:fifteenhex/linux.git
-	git -C linux checkout -b msc313e
+	git -C linux --track origin/msc313e_dev_v5_6_rebase
 	git clone git@github.com:breadbee/u-boot.git
-	git -C u-boot checkout -b m5iplwork
+	git -C u-boot --track origin/m5iplwork
 	git clone git@github.com:breadbee/breadbee_buildroot.git buildroot
 	$(MAKE) -C buildroot bootstrap
 	git clone git@github.com:fifteenhex/mstarblobs.git
