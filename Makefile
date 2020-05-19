@@ -1,22 +1,24 @@
-BUILDROOT=$(shell realpath ./buildroot)
-OUTPUTS=$(BUILDROOT)/outputs/
+BBBUILDROOT=$(shell realpath ./bbbuildroot)
+OUTPUTS=$(shell realpath ./outputs/)
+BUILDROOT=$(BBBUILDROOT)/buildroot
 
 .PHONY: toolchain \
 	buildroot \
 	linux \
 	upload \
-	outputdir \
-	kernel.fit
+	outputsdir \
+	kernel.fit \
+	squeekyclean
 
 CROSS_COMPILE=arm-buildroot-linux-gnueabihf-
 
 all: toolchain nor_ipl spl_padded
 
 buildroot:
-	$(MAKE) -C $(BUILDROOT)
+	$(MAKE) -C $(BBBUILDROOT)
 
 toolchain:
-	if [ ! -e $(BUILDROOT)/buildroot/output/host/bin/arm-buildroot-linux-gnueabihf-gcc ]; then \
+	if [ ! -e $(BUILDROOT)/output/host/bin/arm-buildroot-linux-gnueabihf-gcc ]; then \
 		$(MAKE) buildroot; \
 	fi
 
@@ -28,8 +30,8 @@ bootstrap:
 	git -C linux --track origin/msc313e_dev_v5_6_rebase
 	git clone git@github.com:breadbee/u-boot.git
 	git -C u-boot --track origin/m5iplwork
-	git clone git@github.com:breadbee/breadbee_buildroot.git buildroot
-	$(MAKE) -C buildroot bootstrap
+	git clone git@github.com:breadbee/breadbee_buildroot.git $(BBBOOTROOT)
+	$(MAKE) -C $(BBBUILDROOT) bootstrap
 	git clone git@github.com:fifteenhex/mstarblobs.git
 
 linux:
@@ -49,7 +51,7 @@ linux_config:
 linux_clean:
 	$(MAKE) -C linux ARCH=arm -j8 clean
 
-uboot: toolchain
+uboot: toolchain outputsdir
 	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
 		$(MAKE) -C u-boot msc313_breadbee_defconfig
 	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
@@ -131,3 +133,6 @@ rtk: uboot kernel.fit
 	dd conv=notrunc if=u-boot/u-boot.bin of=rtk
 	dd conv=notrunc if=kernel.fit of=rtk bs=1k seek=256
 	cp rtk $(OUTPUTS)/rtk
+
+squeekyclean:
+	$(MAKE) -C $(BBBUILDROOT) clean
