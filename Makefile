@@ -76,11 +76,10 @@ upload: linux uboot kernel.fit
 #	scp buildroot/output/images/rootfs.squashfs tftp:/srv/tftp/rootfs.msc313e
 
 
-spl_padded: uboot
+spl: uboot
 	python3 u-boot/board/thingyjp/breadbee/fix_ipl_hdr.py \
 		-i u-boot/spl/u-boot-spl.bin \
-		-o spl_padded
-	cp spl_padded ipl
+		-o $(OUTPUTS)/spl
 
 # this is a nor sized image (because flashrom doesn't support writing partial images)
 # that starts with the mstar IPL
