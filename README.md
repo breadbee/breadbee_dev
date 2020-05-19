@@ -38,6 +38,25 @@ the IPL.
 make spl
 ```
 
+### kernel.fit
+
+This builds a kernel FIT image *without* the breadbee overlays but the breadbee rescue initramfs.
+This is mainly for testing on mercury5 where actually writing the rootfs to the SPI NOR would
+destroy the existing firmware that is still useful for making sure the screen etc are still working.
+
+```
+make kernel.fit
+```
+### kernel_breadbee.fit
+
+This builds a kernel FIT image *with* the breadbee overlays and *without* any built in initramfs.
+This is mainly for TFTP booting on a breadbee to test kernel changes with the rootfs already
+being on SPI NOR.
+
+```
+make kernel_breadbee.fit
+```
+
 ## Booting up the outputs
 
 ### Booting the dev kernel over TFTP
