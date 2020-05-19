@@ -59,7 +59,7 @@
 				algo = "sha1";
 			};
 		};
-		/include/ "../breadbee_buildroot/buildroot/output/images/breadbee-overlays/fdtlist"
+		/include/ "bbbuildroot/buildroot/output/images/breadbee-overlays/fdtlist"
 	};
 
 	configurations {
@@ -76,6 +76,6 @@
 			kernel = "kernel@0";
 			fdt = "fdt@2";
 		};
-		/include/ "../breadbee_buildroot/buildroot/output/images/breadbee-overlays/configlist"
+		/include/ "bbbuildroot/buildroot/output/images/breadbee-overlays/configlist"
 	};
 };
