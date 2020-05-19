@@ -8,6 +8,7 @@ BUILDROOT=$(BBBUILDROOT)/buildroot
 	upload \
 	outputsdir \
 	kernel.fit \
+	rtk \
 	squeekyclean
 
 CROSS_COMPILE=arm-buildroot-linux-gnueabihf-
@@ -133,7 +134,7 @@ rtk: uboot kernel.fit
 	dd if=/dev/zero of=rtk bs=1K count=256
 	dd conv=notrunc if=u-boot/u-boot.bin of=rtk
 	dd conv=notrunc if=kernel.fit of=rtk bs=1k seek=256
-	cp rtk $(OUTPUTS)/rtk
+	mv rtk $(OUTPUTS)/rtk
 
 squeekyclean:
 	$(MAKE) -C $(BBBUILDROOT) clean
