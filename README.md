@@ -29,6 +29,15 @@ work with than flashing the SPI NOR each time.
 make rtk
 ```
 
+### spl
+
+This builds the u-boot SPL, pads it and fixes up the image checksum so it can be loaded from
+the IPL.
+
+```
+make spl
+```
+
 ## Booting up the outputs
 
 ### Booting the dev kernel over TFTP
