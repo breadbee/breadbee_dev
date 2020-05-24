@@ -4,6 +4,8 @@ BUILDROOT=$(BBBUILDROOT)/buildroot
 
 .PHONY: toolchain \
 	buildroot \
+	uboot \
+	uboot_m5 \
 	linux \
 	upload \
 	outputsdir \
@@ -60,6 +62,13 @@ uboot: toolchain outputsdir
 		$(MAKE) -C u-boot CROSS_COMPILE=$(CROSS_COMPILE) -j8
 	cp u-boot/u-boot.img $(OUTPUTS)/dev_u-boot.img
 
+uboot_m5: toolchain outputsdir
+	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
+		$(MAKE) -C u-boot mercury5_defconfig
+	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
+		$(MAKE) -C u-boot CROSS_COMPILE=$(CROSS_COMPILE) -j8
+	cp u-boot/u-boot.img $(OUTPUTS)/dev_m5_u-boot.img
+
 uboot_clean:
 	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
 		$(MAKE) -C u-boot clean
@@ -80,6 +89,11 @@ spl: uboot
 	python3 u-boot/board/thingyjp/breadbee/fix_ipl_hdr.py \
 		-i u-boot/spl/u-boot-spl.bin \
 		-o $(OUTPUTS)/spl
+
+spl_m5: uboot_m5
+	python3 u-boot/board/thingyjp/breadbee/fix_ipl_hdr.py \
+		-i u-boot/spl/u-boot-spl.bin \
+		-o $(OUTPUTS)/spl_m5
 
 # this is a nor sized image (because flashrom doesn't support writing partial images)
 # that starts with the mstar IPL
@@ -129,7 +143,7 @@ fix_brick_spl:
 	sudo flashrom --programmer ch341a_spi -w nor -l /media/junk/hardware/breadbee/flashrom_layout -i ipl_uboot_spl -N
 	sudo flashrom --programmer ch341a_spi -w nor -l /media/junk/hardware/breadbee/flashrom_layout -i uboot -N
 
-rtk: uboot kernel.fit
+rtk: uboot_m5 kernel.fit
 	dd if=/dev/zero of=rtk bs=1K count=256
 	dd conv=notrunc if=u-boot/u-boot.bin of=rtk
 	dd conv=notrunc if=kernel.fit of=rtk bs=1k seek=256
@@ -137,3 +151,18 @@ rtk: uboot kernel.fit
 
 squeekyclean:
 	$(MAKE) -C $(BBBUILDROOT) clean
+
+copy_kernel_to_sd:
+	sudo mount /dev/sdc1 /mnt
+	- sudo cp outputs/dev_kernel.fit /mnt/kernel.fit
+	sudo umount /mnt
+
+copy_spl_m5_to_sd: spl_m5
+	sudo mount /dev/sdc1 /mnt
+	- sudo cp outputs/spl_m5 /mnt/ipl
+	sudo umount /mnt
+
+copy_uboot_m5_to_sd: uboot_m5
+	sudo mount /dev/sdc1 /mnt
+	- sudo cp outputs/dev_m5_u-boot.img /mnt/u-boot.img
+	sudo umount /mnt
