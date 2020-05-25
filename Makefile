@@ -63,6 +63,7 @@ uboot: toolchain outputsdir
 	cp u-boot/u-boot.img $(OUTPUTS)/dev_u-boot.img
 
 uboot_m5: toolchain outputsdir
+	$(MAKE) -C u-boot clean
 	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
 		$(MAKE) -C u-boot mercury5_defconfig
 	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
@@ -76,11 +77,12 @@ uboot_clean:
 # this is to upload the resulting binaries to a tftp server to load on the
 # target
 upload: linux uboot kernel.fit
-	scp linux/arch/arm/boot/zImage.msc313e tftp:/srv/tftp/zImage.msc313e
-	scp linux/arch/arm/boot/dts/infinity3-msc313e-breadbee.dtb tftp:/srv/tftp/msc313e-breadbee.dtb
-	scp u-boot/spl/u-boot-spl.bin tftp:/srv/tftp/ubootspl.msc313e
-	scp u-boot/u-boot.img tftp:/srv/tftp/uboot.msc313e
-	scp kernel.fit tftp:/srv/tftp/kernel.fit.breadbee
+	scp outputs/dev_kernel_breadbee.fit tftp:/srv/tftp/dev_kernel_breadbee.fit
+#	scp linux/arch/arm/boot/zImage.msc313e tftp:/srv/tftp/zImage.msc313e
+#	scp linux/arch/arm/boot/dts/infinity3-msc313e-breadbee.dtb tftp:/srv/tftp/msc313e-breadbee.dtb
+#	scp u-boot/spl/u-boot-spl.bin tftp:/srv/tftp/ubootspl.msc313e
+#	scp u-boot/u-boot.img tftp:/srv/tftp/uboot.msc313e
+#	scp kernel.fit tftp:/srv/tftp/kernel.fit.breadbee
 #	scp linux/arch/arm/boot/zImage.msc313d tftp:/srv/tftp/zImage.msc313d
 #	scp buildroot/output/images/rootfs.squashfs tftp:/srv/tftp/rootfs.msc313e
 
@@ -143,10 +145,12 @@ fix_brick_spl:
 	sudo flashrom --programmer ch341a_spi -w nor -l /media/junk/hardware/breadbee/flashrom_layout -i ipl_uboot_spl -N
 	sudo flashrom --programmer ch341a_spi -w nor -l /media/junk/hardware/breadbee/flashrom_layout -i uboot -N
 
+RTKPADBYTES=512
+
 rtk: uboot_m5 kernel.fit
-	dd if=/dev/zero of=rtk bs=1K count=256
+	dd if=/dev/zero of=rtk bs=1K count=$(RTKPADBYTES)
 	dd conv=notrunc if=u-boot/u-boot.bin of=rtk
-	dd conv=notrunc if=kernel.fit of=rtk bs=1k seek=256
+	dd conv=notrunc if=kernel.fit of=rtk bs=1k seek=$(RTKPADBYTES)
 	mv rtk $(OUTPUTS)/rtk
 
 squeekyclean:
@@ -166,3 +170,11 @@ copy_uboot_m5_to_sd: uboot_m5
 	sudo mount /dev/sdc1 /mnt
 	- sudo cp outputs/dev_m5_u-boot.img /mnt/u-boot.img
 	sudo umount /mnt
+
+copy_rtk_m5_to_sd: rtk
+	sudo mount /dev/sdc1 /mnt
+	- sudo cp outputs/rtk /mnt/rtk
+	sudo umount /mnt
+
+run_tftpd: buildroot
+	$(MAKE) -C $(BBBUILDROOT) run_tftpd
