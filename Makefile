@@ -127,8 +127,8 @@ nor: uboot kernel.fit
 
 # this builds a FIT image with the kernel and the right device trees. This
 # should be used with the new u-boot.
-kernel.fit: outputsdir linux
-	mkimage -f kernel.its kernel.fit
+kernel_m5.fit: buildroot_m5 outputsdir linux
+	mkimage -f kernel_m5.its kernel_m5.fit
 	cp $@ $(OUTPUTS)/dev_$@
 
 kernel_breadbee.fit: outputsdir linux
@@ -167,7 +167,7 @@ squeekyclean:
 
 copy_kernel_to_sd:
 	sudo mount /dev/sdc1 /mnt
-	- sudo cp outputs/dev_kernel.fit /mnt/kernel.fit
+	- sudo cp outputs/dev_kernel_m5.fit /mnt/kernel.fit
 	sudo umount /mnt
 
 copy_spl_m5_to_sd: spl_m5
