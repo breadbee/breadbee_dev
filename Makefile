@@ -1,9 +1,11 @@
 BBBUILDROOT=$(shell realpath ./bbbuildroot)
+M5BUILDROOT=$(shell realpath ./m5buildroot)
 OUTPUTS=$(shell realpath ./outputs/)
 BUILDROOT=$(BBBUILDROOT)/buildroot
 
 .PHONY: toolchain \
 	buildroot \
+	buildroot_m5 \
 	uboot \
 	uboot_m5 \
 	linux \
@@ -20,6 +22,9 @@ all: toolchain nor_ipl spl_padded
 buildroot:
 	$(MAKE) -C $(BBBUILDROOT)
 
+buildroot_m5:
+	$(MAKE) -C $(M5BUILDROOT)
+
 toolchain:
 	if [ ! -e $(BUILDROOT)/output/host/bin/arm-buildroot-linux-gnueabihf-gcc ]; then \
 		$(MAKE) buildroot; \
@@ -34,9 +39,12 @@ bootstrap:
 	cp linux.config linux/.config
 	git clone git@github.com:breadbee/u-boot.git
 	git -C u-boot --track origin/m5iplwork
-	git clone git@github.com:breadbee/breadbee_buildroot.git $(BBBOOTROOT)
+	git clone git@github.com:breadbee/breadbee_buildroot.git $(BBBUILDROOT)
 	$(MAKE) -C $(BBBUILDROOT) bootstrap
 	git clone git@github.com:fifteenhex/mstarblobs.git
+
+	git clone git@github.com:fifteenhex/buildroot_mercury5.git $(M5BUILDROOT)
+	$(MAKE) -C $(M5BUILDROOT)
 
 linux:
 	- rm linux/arch/arm/boot/zImage
@@ -56,6 +64,7 @@ linux_clean:
 	$(MAKE) -C linux ARCH=arm -j8 clean
 
 uboot: toolchain outputsdir
+	$(MAKE) -C u-boot clean
 	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
 		$(MAKE) -C u-boot msc313_breadbee_defconfig
 	PATH=$(BUILDROOT)/output/host/bin:$$PATH \

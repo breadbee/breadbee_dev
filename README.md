@@ -77,6 +77,9 @@ setenv serverip 192.168.3.235; setenv loadaddr 0x22000000; dhcp dev_vendor.fit; 
 setenv serverip 192.168.3.1; setenv loadaddr 0x22000000; dhcp kernel.fit.breadbee; bootm ${loadaddr}"#breadbee#sdio_sd"
 ```
 
+# booting the kernel from sd card
+```fatload mmc 0:1 $loadaddr kernel.fit; bootm $loadaddr#mirrorcam```
+
 # Booting the uboot + kernel fit RTK image
 
 - copy the rtk file to your SD card
