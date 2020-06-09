@@ -147,6 +147,12 @@ clean: linux_clean
 push_linux_config:
 	cp linux/.config ../breadbee_buildroot/br2breadbee/board/thingyjp/breadbee/linux.config
 
+push_linux_m5_config:
+	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
+		$(MAKE) -C linux DTC_FLAGS=--symbols \
+		ARCH=arm -j8 CROSS_COMPILE=$(CROSS_COMPILE) savedefconfig
+	cp linux/defconfig $(M5BUILDROOT)/br2midrive08/board/70mai/midrive08/linux.config
+
 fix_brick:
 	sudo flashrom --programmer ch341a_spi -w nor_ipl -l /media/junk/hardware/breadbee/flashrom_layout -i ipl_uboot_spl -N
 	sudo flashrom --programmer ch341a_spi -w nor_ipl -l /media/junk/hardware/breadbee/flashrom_layout -i uboot -N
@@ -155,13 +161,8 @@ fix_brick_spl:
 	sudo flashrom --programmer ch341a_spi -w nor -l /media/junk/hardware/breadbee/flashrom_layout -i ipl_uboot_spl -N
 	sudo flashrom --programmer ch341a_spi -w nor -l /media/junk/hardware/breadbee/flashrom_layout -i uboot -N
 
-RTKPADBYTES=512
-
-rtk: uboot_m5 kernel_m5.fit
-	dd if=/dev/zero of=rtk bs=1K count=$(RTKPADBYTES)
-	dd conv=notrunc if=u-boot/u-boot.bin of=rtk
-	dd conv=notrunc if=kernel_m5.fit of=rtk bs=1k seek=$(RTKPADBYTES)
-	mv rtk $(OUTPUTS)/rtk
+rtk: uboot_m5
+	cp u-boot/u-boot.bin $(OUTPUTS)/rtk
 
 squeekyclean:
 	$(MAKE) -C $(BBBUILDROOT) clean

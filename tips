@@ -25,3 +25,10 @@ tftp -g -r rtk -l /tmp/rtk 192.168.3.235 && mount /dev/mmcblk0p1 /mnt/ && cp /tm
 
 for B in `seq 0 63`; do BH=`echo obase=16\;ibase=10\;$B| bc;`; OFF=`echo obase=16\;ibase=16\;21000000+($BH*20000) | bc;`; echo md.b 0x$OFF 0x20000 > /dev/ttyUSB0; sleep 110; done
 
+
+udhcpc && mount /dev/mmcblk0p1 /mnt && cd /mnt && tftp -g -r dev_kernel_m5.fit 192.168.3.235
+fatload mmc 0:1 $loadaddr dev_kernel_m5.fit; bootm $loadaddr#midrive08
+
+setenv bootargs "console=ttyS0,115200 root=/dev/mmcblk0p2 rootwait clk_ignore_unused earlyprintk=serial,ttyS0,115200"
+fatload mmc 0:1 $loadaddr kernel.fit; bootm $loadaddr#midrive08
+
