@@ -11,7 +11,7 @@ BUILDROOT=$(BBBUILDROOT)/buildroot
 	linux \
 	upload \
 	outputsdir \
-	kernel.fit \
+	kernel_m5.fit \
 	rtk \
 	squeekyclean
 
@@ -141,7 +141,7 @@ vendor.fit: outputsdir
 
 
 clean: linux_clean
-	rm -rf kernel.fit nor nor_ipl
+	rm -rf kernel_m5.fit nor nor_ipl
 
 push_linux_config:
 	cp linux/.config ../breadbee_buildroot/br2breadbee/board/thingyjp/breadbee/linux.config
@@ -156,10 +156,10 @@ fix_brick_spl:
 
 RTKPADBYTES=512
 
-rtk: uboot_m5 kernel.fit
+rtk: uboot_m5 kernel_m5.fit
 	dd if=/dev/zero of=rtk bs=1K count=$(RTKPADBYTES)
 	dd conv=notrunc if=u-boot/u-boot.bin of=rtk
-	dd conv=notrunc if=kernel.fit of=rtk bs=1k seek=$(RTKPADBYTES)
+	dd conv=notrunc if=kernel_m5.fit of=rtk bs=1k seek=$(RTKPADBYTES)
 	mv rtk $(OUTPUTS)/rtk
 
 squeekyclean:
