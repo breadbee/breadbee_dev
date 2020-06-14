@@ -34,12 +34,15 @@ toolchain:
 outputsdir:
 	mkdir -p $(OUTPUTS)
 
+DEFAULT_BRANCH_LINUX=mstar_dev_v5_8_rebase_clean
+DEFAULT_BRANCH_UBOOT=m5iplwork
+
 bootstrap:
 	git clone git@github.com:fifteenhex/linux.git
-	git -C linux checkout --track origin/msc313e_dev_v5_6_rebase
+	git -C linux checkout --track origin/$(DEFAULT_BRANCH_LINUX)
 	cp linux.config linux/.config
 	git clone git@github.com:breadbee/u-boot.git
-	git -C u-boot checkout --track origin/m5iplwork
+	git -C u-boot checkout --track origin/$(DEFAULT_BRANCH_UBOOT)
 	git clone git@github.com:breadbee/breadbee_buildroot.git $(BBBUILDROOT)
 	$(MAKE) -C $(BBBUILDROOT) bootstrap
 	git clone git@github.com:fifteenhex/mstarblobs.git
