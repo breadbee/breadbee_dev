@@ -21,9 +21,13 @@ reuse the toolchain and rootfs and will be much faster.
 ### rtk
 
 This is a special target that is not for the breadbee at all. Instead this is for development
-using a mercury5 device. This can be useful because the infinity3 (breadbee Soc) and mercury5
-are very similar but the mercury5 supports booting u-boot from SD card so it's a lot easier to
-work with than flashing the SPI NOR each time.
+using a mercury5 device. The m5 IPL looks for a file called ```rtk``` (real time kernel?) on 
+the first FAT partition, loads it to DRAM and jumps into it. We can exploit this to load u-boot
+into DRAM and start it.
+
+This can be useful because the infinity3 (breadbee Soc) and mercury5 are very similar but the
+mercury5 supports booting u-boot from SD card so it's a lot easier to work with than flashing
+the SPI NOR each time.
 
 ```
 make rtk
@@ -47,6 +51,7 @@ destroy the existing firmware that is still useful for making sure the screen et
 ```
 make kernel_m5.fit
 ```
+
 ### kernel_breadbee.fit
 
 This builds a kernel FIT image *with* the breadbee overlays and *without* any built in initramfs.
@@ -78,14 +83,14 @@ setenv serverip 192.168.3.1; setenv loadaddr 0x22000000; dhcp kernel.fit.breadbe
 ```
 
 # booting the kernel from sd card
+
+## mercury5 midrive d08
+
+```fatload mmc 0:1 $loadaddr kernel.fit; bootm $loadaddr#midrive08```
+
+## mercury5 mirror cam
+
 ```fatload mmc 0:1 $loadaddr kernel.fit; bootm $loadaddr#mirrorcam```
-
-# Booting the uboot + kernel fit RTK image
-
-- copy the rtk file to your SD card
-- wait until you get the uboot prompt
-- type ```bootm 0x20048000#midrive08``` and hit enter
-
 
 # Replacing u-boot
 
