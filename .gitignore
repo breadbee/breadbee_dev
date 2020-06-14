@@ -1,1 +1,5 @@
-kernel.fit
+bbbuildroot
+m5buildroot
+u-boot
+linux
+outputs
