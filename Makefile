@@ -12,6 +12,7 @@ BUILDROOT=$(BBBUILDROOT)/buildroot
 	upload \
 	outputsdir \
 	kernel_m5.fit \
+	kernel_breadbee.fit \
 	rtk \
 	squeekyclean
 
@@ -85,7 +86,7 @@ uboot_clean:
 
 # this is to upload the resulting binaries to a tftp server to load on the
 # target
-upload: linux uboot kernel.fit
+upload: linux uboot kernel_breadbee.fit
 	scp outputs/dev_kernel_breadbee.fit tftp:/srv/tftp/dev_kernel_breadbee.fit
 #	scp linux/arch/arm/boot/zImage.msc313e tftp:/srv/tftp/zImage.msc313e
 #	scp linux/arch/arm/boot/dts/infinity3-msc313e-breadbee.dtb tftp:/srv/tftp/msc313e-breadbee.dtb
@@ -108,18 +109,18 @@ spl_m5: uboot_m5
 
 # this is a nor sized image (because flashrom doesn't support writing partial images)
 # that starts with the mstar IPL
-nor_ipl: uboot kernel.fit spl_padded
+nor_ipl: uboot kernel_breadbee.fit spl_padded
 	rm -f nor_ipl
 	dd if=/dev/zero ibs=1M count=16 | tr "\000" "\377" > nor_ipl
 	##dd conv=notrunc if=IPL.bin of=nor_ipl bs=1k seek=16
 	dd conv=notrunc if=ipl_ddr3.bin of=nor_ipl bs=1k seek=16
 	dd conv=notrunc if=spl_padded of=nor_ipl bs=1k seek=64
 	dd conv=notrunc if=u-boot/u-boot.img of=nor_ipl bs=1k seek=128
-	dd conv=notrunc if=kernel.fit of=nor_ipl bs=1k seek=512
+	dd conv=notrunc if=kernel_breadbee.fit of=nor_ipl bs=1k seek=512
 
 # this is a nor sized image that starts with the u-boot SPL. This will require the
 # SPL do the DDR setup etc.
-nor: uboot kernel.fit
+nor: uboot
 	rm -f nor
 	dd if=/dev/zero ibs=1M count=16 | tr "\000" "\377" > nor
 	dd conv=notrunc if=u-boot/spl/u-boot-spl.bin of=nor bs=1k seek=16
@@ -141,7 +142,7 @@ vendor.fit: outputsdir
 
 
 clean: linux_clean
-	rm -rf kernel_m5.fit nor nor_ipl
+	rm -rf kernel_m5.fit kernel_breadbee.fit nor nor_ipl
 
 push_linux_config:
 	cp linux/.config ../breadbee_buildroot/br2breadbee/board/thingyjp/breadbee/linux.config
@@ -165,7 +166,7 @@ rtk: uboot_m5 kernel_m5.fit
 squeekyclean:
 	$(MAKE) -C $(BBBUILDROOT) clean
 
-copy_kernel_to_sd:
+copy_kernel_to_sd: kernel_m5.fit
 	sudo mount /dev/sdc1 /mnt
 	- sudo cp outputs/dev_kernel_m5.fit /mnt/kernel.fit
 	sudo umount /mnt
