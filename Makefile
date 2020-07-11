@@ -56,8 +56,6 @@ linux:
 		$(MAKE) -C linux DTC_FLAGS=--symbols \
 		ARCH=arm -j8 CROSS_COMPILE=$(CROSS_COMPILE) zImage dtbs
 	# these are for booting with the old mstar u-boot that can't load a dtb
-	#cat linux/arch/arm/boot/zImage linux/arch/arm/boot/dts/msc313e-breadbee.dtb > \
-	#	$(OUTPUTS)/zImage.msc313e
 	#cat linux/arch/arm/boot/zImage linux/arch/arm/boot/dts/msc313d-mc400l.dtb > \
 	#	$(OUTPUTS)/zImage.msc313d
 
@@ -138,6 +136,10 @@ kernel_m5.fit: buildroot_m5 outputsdir linux
 kernel_breadbee.fit: outputsdir linux
 	mkimage -f kernel_breadbee.its kernel_breadbee.fit
 	cp $@ $(OUTPUTS)/dev_$@
+
+kernel_ssd201htv2: outputsdir linux
+	cat linux/arch/arm/boot/zImage linux/arch/arm/boot/dts/infinity2m-ssd202-ssd201htv2.dtb > \
+		$(OUTPUTS)/$@
 
 vendor.fit: outputsdir
 	mkimage -f vendor.its vendor.fit

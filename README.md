@@ -62,6 +62,14 @@ being on SPI NOR.
 make kernel_breadbee.fit
 ```
 
+### kernel_ssd201htv2
+
+This builds a kernel with an appended DTB for the ssd201htv2 with the vendor u-boot
+
+```
+mw 0x16002000 0x1e0; setenv serverip 192.168.3.235; setenv loadaddr 0x22000000; dhcp kernel_ssd201htv2; go ${loadaddr}
+```
+
 ## Booting up the outputs
 
 ### Booting the dev kernel over TFTP
