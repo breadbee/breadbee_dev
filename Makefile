@@ -127,24 +127,21 @@ nor: uboot
 	dd conv=notrunc if=u-boot/spl/u-boot-spl.bin of=nor bs=1k seek=16
 	dd conv=notrunc if=u-boot/u-boot.img of=nor bs=1k seek=128
 
-# this builds a FIT image with the kernel and the right device trees. This
-# should be used with the new u-boot.
+# This builds a FIT image with the kernel and right device tree for m5
 kernel_m5.fit: buildroot_m5 outputsdir linux
 	mkimage -f kernel_m5.its kernel_m5.fit
 	cp $@ $(OUTPUTS)/dev_$@
 
+# This builds a FIT image with the kernel and the right device trees for breadbee.
 kernel_breadbee.fit: outputsdir linux
 	mkimage -f kernel_breadbee.its kernel_breadbee.fit
 	cp $@ $(OUTPUTS)/dev_$@
 
+# This builds kernel image with the DTB appended to the end for the ssd201htv2 with
+# vendor u-boot
 kernel_ssd201htv2: outputsdir linux
 	cat linux/arch/arm/boot/zImage linux/arch/arm/boot/dts/infinity2m-ssd202-ssd201htv2.dtb > \
 		$(OUTPUTS)/$@
-
-vendor.fit: outputsdir
-	mkimage -f vendor.its vendor.fit
-	cp $@ $(OUTPUTS)/dev_$@
-
 
 clean: linux_clean
 	rm -rf kernel_m5.fit kernel_breadbee.fit nor nor_ipl
