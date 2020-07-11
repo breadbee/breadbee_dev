@@ -1,3 +1,8 @@
+# Note: This isn't really a build system
+# It's a bunch of command lines encoded
+# in a Makefile so I don't have to remember
+# multi part processes
+
 BBBUILDROOT=$(shell realpath ./bbbuildroot)
 M5BUILDROOT=$(shell realpath ./m5buildroot)
 OUTPUTS=$(shell realpath ./outputs/)
@@ -20,11 +25,21 @@ CROSS_COMPILE=arm-buildroot-linux-gnueabihf-
 
 all: toolchain nor_ipl spl_padded
 
+outputsdir:
+	mkdir -p $(OUTPUTS)
+
+# We have two copies of build root here:
+# one is the breadbee version with the bits it needs
+# the other is the m5 version that is basically stock.
+
 buildroot:
 	$(MAKE) -C $(BBBUILDROOT)
 
 buildroot_m5:
 	$(MAKE) -C $(M5BUILDROOT)
+	# We might want a generic rootfs to embed into a kernel,
+	# so copy that into the outputs dir
+	cp $(M5BUILDROOT)/buildroot/output/images/rootfs.cpio $(OUTPUTS)/m5_rootfs.cpio
 
 toolchain:
 	if [ ! -e $(BUILDROOT)/output/host/bin/arm-buildroot-linux-gnueabihf-gcc ]; then \
@@ -56,13 +71,11 @@ linux:
 		$(MAKE) -C linux DTC_FLAGS=--symbols \
 		ARCH=arm -j8 CROSS_COMPILE=$(CROSS_COMPILE) zImage dtbs
 	# these are for booting with the old mstar u-boot that can't load a dtb
-	#cat linux/arch/arm/boot/zImage linux/arch/arm/boot/dts/msc313e-breadbee.dtb > \
-	#	$(OUTPUTS)/zImage.msc313e
 	#cat linux/arch/arm/boot/zImage linux/arch/arm/boot/dts/msc313d-mc400l.dtb > \
 	#	$(OUTPUTS)/zImage.msc313d
 
 linux_config:
-	$(MAKE) -C linux ARCH=arm -j8 menuconfig
+	$(MAKE) -C linux ARCH=arm menuconfig
 
 linux_clean:
 	$(MAKE) -C linux ARCH=arm -j8 clean
@@ -129,20 +142,21 @@ nor: uboot
 	dd conv=notrunc if=u-boot/spl/u-boot-spl.bin of=nor bs=1k seek=16
 	dd conv=notrunc if=u-boot/u-boot.img of=nor bs=1k seek=128
 
-# this builds a FIT image with the kernel and the right device trees. This
-# should be used with the new u-boot.
+# This builds a FIT image with the kernel and right device tree for m5
 kernel_m5.fit: buildroot_m5 outputsdir linux
 	mkimage -f kernel_m5.its kernel_m5.fit
 	cp $@ $(OUTPUTS)/dev_$@
 
+# This builds a FIT image with the kernel and the right device trees for breadbee.
 kernel_breadbee.fit: outputsdir linux
 	mkimage -f kernel_breadbee.its kernel_breadbee.fit
 	cp $@ $(OUTPUTS)/dev_$@
 
-vendor.fit: outputsdir
-	mkimage -f vendor.its vendor.fit
-	cp $@ $(OUTPUTS)/dev_$@
-
+# This builds kernel image with the DTB appended to the end for the ssd201htv2 with
+# vendor u-boot
+kernel_ssd201htv2: outputsdir linux buildroot_m5
+	cat linux/arch/arm/boot/zImage linux/arch/arm/boot/dts/infinity2m-ssd202-ssd201htv2.dtb > \
+		$(OUTPUTS)/$@
 
 clean: linux_clean
 	rm -rf kernel_m5.fit kernel_breadbee.fit nor nor_ipl
