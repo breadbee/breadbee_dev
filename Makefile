@@ -1,3 +1,8 @@
+# Note: This isn't really a build system
+# It's a bunch of command lines encoded
+# in a Makefile so I don't have to remember
+# multi part processes
+
 BBBUILDROOT=$(shell realpath ./bbbuildroot)
 M5BUILDROOT=$(shell realpath ./m5buildroot)
 OUTPUTS=$(shell realpath ./outputs/)
@@ -20,19 +25,26 @@ CROSS_COMPILE=arm-buildroot-linux-gnueabihf-
 
 all: toolchain nor_ipl spl_padded
 
+outputsdir:
+	mkdir -p $(OUTPUTS)
+
+# We have two copies of build root here:
+# one is the breadbee version with the bits it needs
+# the other is the m5 version that is basically stock.
+
 buildroot:
 	$(MAKE) -C $(BBBUILDROOT)
 
 buildroot_m5:
 	$(MAKE) -C $(M5BUILDROOT)
+	# We might want a generic rootfs to embed into a kernel,
+	# so copy that into the outputs dir
+	cp $(M5BUILDROOT)/buildroot/output/images/rootfs.cpio $(OUTPUTS)/m5_rootfs.cpio
 
 toolchain:
 	if [ ! -e $(BUILDROOT)/output/host/bin/arm-buildroot-linux-gnueabihf-gcc ]; then \
 		$(MAKE) buildroot; \
 	fi
-
-outputsdir:
-	mkdir -p $(OUTPUTS)
 
 DEFAULT_BRANCH_LINUX=mstar_dev_v5_8_rebase_cleanup
 DEFAULT_BRANCH_UBOOT=m5iplwork
@@ -60,7 +72,7 @@ linux:
 	#	$(OUTPUTS)/zImage.msc313d
 
 linux_config:
-	$(MAKE) -C linux ARCH=arm -j8 menuconfig
+	$(MAKE) -C linux ARCH=arm menuconfig
 
 linux_clean:
 	$(MAKE) -C linux ARCH=arm -j8 clean
@@ -139,7 +151,7 @@ kernel_breadbee.fit: outputsdir linux
 
 # This builds kernel image with the DTB appended to the end for the ssd201htv2 with
 # vendor u-boot
-kernel_ssd201htv2: outputsdir linux
+kernel_ssd201htv2: outputsdir linux buildroot_m5
 	cat linux/arch/arm/boot/zImage linux/arch/arm/boot/dts/infinity2m-ssd202-ssd201htv2.dtb > \
 		$(OUTPUTS)/$@
 
