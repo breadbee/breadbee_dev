@@ -32,3 +32,11 @@ fatload mmc 0:1 $loadaddr dev_kernel_m5.fit; bootm $loadaddr#midrive08
 setenv bootargs "console=ttyS0,115200 root=/dev/mmcblk0p2 rootwait clk_ignore_unused earlyprintk=serial,ttyS0,115200"
 fatload mmc 0:1 $loadaddr kernel.fit; bootm $loadaddr#midrive08
 
+## Testing DMA
+
+```
+cd /sys/module/dmatest/parameters/; \
+echo dma0chan0 > channel; \
+echo 1 > run; \
+sleep 10; \
+echo 0 > run
