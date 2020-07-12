@@ -77,10 +77,12 @@ linux:
 	#	$(OUTPUTS)/zImage.msc313d
 
 linux_config:
-	$(MAKE) -C linux $(LINUX_ARGS) menuconfig
+	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
+		$(MAKE) -C linux $(LINUX_ARGS) menuconfig
 
 linux_clean:
-	$(MAKE) -C linux $(LINUX_ARGS) clean
+	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
+		$(MAKE) -C linux $(LINUX_ARGS) clean
 
 uboot: toolchain outputsdir
 	$(MAKE) -C u-boot clean
