@@ -46,6 +46,9 @@ toolchain:
 		$(MAKE) buildroot; \
 	fi
 
+outputsdir:
+	mkdir -p $(OUTPUTS)
+
 DEFAULT_BRANCH_LINUX=mstar_dev_v5_8_rebase_cleanup
 DEFAULT_BRANCH_UBOOT=m5iplwork
 
