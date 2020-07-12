@@ -65,20 +65,22 @@ bootstrap:
 	git clone git@github.com:fifteenhex/buildroot_mercury5.git $(M5BUILDROOT)
 	$(MAKE) -C $(M5BUILDROOT) bootstrap
 
+LINUX_ARGS=ARCH=arm -j8 CROSS_COMPILE=$(CROSS_COMPILE)
 linux:
 	- rm linux/arch/arm/boot/zImage
 	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
 		$(MAKE) -C linux DTC_FLAGS=--symbols \
-		ARCH=arm -j8 CROSS_COMPILE=$(CROSS_COMPILE) zImage dtbs
+		$(LINUX_ARGS) \
+		zImage dtbs
 	# these are for booting with the old mstar u-boot that can't load a dtb
 	#cat linux/arch/arm/boot/zImage linux/arch/arm/boot/dts/msc313d-mc400l.dtb > \
 	#	$(OUTPUTS)/zImage.msc313d
 
 linux_config:
-	$(MAKE) -C linux ARCH=arm menuconfig
+	$(MAKE) -C linux $(LINUX_ARGS) menuconfig
 
 linux_clean:
-	$(MAKE) -C linux ARCH=arm -j8 clean
+	$(MAKE) -C linux $(LINUX_ARGS) clean
 
 uboot: toolchain outputsdir
 	$(MAKE) -C u-boot clean
