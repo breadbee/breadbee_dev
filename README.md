@@ -72,13 +72,3 @@ setenv serverip 192.168.3.235; if dhcp dev_u-boot.img; then; sf probe; sf erase 
 if loady ${loadaddr} 460800; then; sf probe; sf erase 0x20000 0x50000; sf write 0x22000000 0x20000 0x50000; fi
 ```
 
-
-## Testing DMA
-
-```
-cd /sys/module/dmatest/parameters/; \
-echo dma0chan0 > channel; \
-echo 1 > run; \
-sleep 10; \
-echo 0 > run
-```

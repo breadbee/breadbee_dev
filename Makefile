@@ -6,6 +6,7 @@ INUX_IMAGE=$(LINUXROOT)/arch/arm/boot/zImage
 UBOOTROOT=$(shell realpath $(PWD)/u-boot)
 MSTARBLOBSROOT=$(shell realpath $(PWD)/mstarblobs)
 VENDOR_FIT=$(OUTPUTS)/dev_vendor.fit
+LINUX_ARGS=ARCH=arm -j8 CROSS_COMPILE=$(CROSS_COMPILE)
 
 BBBUILDROOT=$(shell realpath $(PWD)/bbbuildroot)
 BB_TOOLCHAIN=$(BBBUILDROOT)/buildroot/output/host
@@ -82,23 +83,27 @@ $(LINUX_CONFIG): $(LINUXROOT)
 $(BB_LINUX_STAMP): $(BB_TOOLCHAIN) $(LINUX_CONFIG)
 	PATH=$(BB_TOOLCHAIN)/bin:$$PATH \
 		$(MAKE) -C linux DTC_FLAGS=--symbols \
-		ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) zImage dtbs
+		$(LINUX_ARGS) \
+		zImage dtbs
 	touch $@
 
 $(M5_LINUX_STAMP): $(M5_TOOLCHAIN) $(LINUX_CONFIG)
 	PATH=$(M5_TOOLCHAIN)/bin:$$PATH \
 		$(MAKE) -C linux DTC_FLAGS=--symbols \
-		ARCH=arm CROSS_COMPILE=$(CROSS_COMPILE) zImage dtbs
+		$(LINUX_ARGS) \
+		zImage dtbs
 	# these are for booting with the old mstar u-boot that can't load a dtb
 	#cat linux/arch/arm/boot/zImage linux/arch/arm/boot/dts/msc313d-mc400l.dtb > \
 	#	$(OUTPUTS)/zImage.msc313d
 	touch $@
 
 linux_config:
-	$(MAKE) -C linux ARCH=arm menuconfig
+	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
+		$(MAKE) -C linux $(LINUX_ARGS) menuconfig
 
 linux_clean:
-	$(MAKE) -C linux ARCH=arm -j8 clean
+	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
+		$(MAKE) -C linux $(LINUX_ARGS) clean
 
 $(BB_UBOOT): $(BB_TOOLCHAIN) $(OUTPUTS) $(UBOOTROOT)
 	$(MAKE) -C u-boot clean
