@@ -148,13 +148,13 @@ nor: uboot
 
 # This builds a FIT image with the kernel and right device tree for m5
 kernel_m5.fit: buildroot_m5 outputsdir linux
-	mkimage -f kernel_m5.its kernel_m5.fit
-	cp $@ $(OUTPUTS)/dev_$@
+	mkimage -f kernel_m5.its \
+		$(OUTPUTS)/dev_$@
 
 # This builds a FIT image with the kernel and the right device trees for breadbee.
 kernel_breadbee.fit: outputsdir linux
-	mkimage -f kernel_breadbee.its kernel_breadbee.fit
-	cp $@ $(OUTPUTS)/dev_$@
+	mkimage -f kernel_breadbee.its \
+		$(OUTPUTS)/dev_$@
 
 # This builds kernel image with the DTB appended to the end for the ssd201htv2 with
 # vendor u-boot

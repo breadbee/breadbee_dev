@@ -92,6 +92,10 @@ setenv serverip 192.168.3.1; setenv loadaddr 0x22000000; dhcp kernel.fit.breadbe
 
 # booting the kernel from sd card
 
+## mercury5 midrive d06
+
+```fatload mmc 0:1 $loadaddr kernel.fit; bootm $loadaddr#midrived06```
+
 ## mercury5 midrive d08
 
 ```fatload mmc 0:1 $loadaddr kernel.fit; bootm $loadaddr#midrive08```
