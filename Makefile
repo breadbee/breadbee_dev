@@ -162,6 +162,12 @@ kernel_ssd201htv2: outputsdir linux buildroot_m5
 	cat linux/arch/arm/boot/zImage linux/arch/arm/boot/dts/infinity2m-ssd202-ssd201htv2.dtb > \
 		$(OUTPUTS)/$@
 
+# This builds kernel image with the DTB appended to the end for the mcf50 with
+# vendor u-boot
+kernel_mcf50: outputsdir linux buildroot_m5
+	cat linux/arch/arm/boot/zImage linux/arch/arm/boot/dts/infinity6b0-ssc337de-mcf50.dtb > \
+		$(OUTPUTS)/$@
+
 clean: linux_clean
 	rm -rf kernel_m5.fit kernel_breadbee.fit nor nor_ipl
 
