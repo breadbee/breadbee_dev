@@ -40,3 +40,11 @@ echo dma0chan0 > channel; \
 echo 1 > run; \
 sleep 10; \
 echo 0 > run
+
+## Updating m5 via usb ethernet
+
+```
+fatload mmc 0:1 $loadaddr dev_kernel_m5.fit; bootm $loadaddr#midrived06
+
+udhcpc eth0; mkdir /boot; mount /dev/mmcblk0p1 /boot; cd /boot; tftp -r dev_kernel_m5.fit -g 192.168.3.235; cd /; umount /boot;
+```
