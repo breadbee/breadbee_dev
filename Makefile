@@ -30,6 +30,30 @@ all: toolchain nor_ipl spl_padded
 outputsdir:
 	mkdir -p $(OUTPUTS)
 
+# Prepare the environment
+DEFAULT_BRANCH_LINUX=mstar_dev_v5_8_rebase_cleanup
+DEFAULT_BRANCH_UBOOT=m5iplwork
+
+bootstrap:
+	git clone git@github.com:fifteenhex/linux.git
+	git -C linux checkout --track origin/$(DEFAULT_BRANCH_LINUX)
+	cp linux.config linux/.config
+	git clone git@github.com:breadbee/u-boot.git
+	git -C u-boot checkout --track origin/$(DEFAULT_BRANCH_UBOOT)
+	git clone git@github.com:breadbee/breadbee_buildroot.git $(BBBUILDROOT)
+	$(MAKE) -C $(BBBUILDROOT) bootstrap
+	git clone git@github.com:fifteenhex/mstarblobs.git
+
+	git clone git@github.com:fifteenhex/buildroot_mercury5.git $(M5BUILDROOT)
+	$(MAKE) -C $(M5BUILDROOT) bootstrap
+
+# We need an ARM toolchain to build stuff so build one
+# in the breadbee buildroot
+toolchain:
+	if [ ! -e $(BUILDROOT)/output/host/bin/arm-buildroot-linux-gnueabihf-gcc ]; then \
+		$(MAKE) buildroot; \
+	fi
+
 # We have two copies of build root here:
 # one is the breadbee version with the bits it needs
 # the other is the m5 version that is basically stock.
@@ -59,27 +83,6 @@ buildroot_m5_linux_update:
 buildroot_m5_clean:
 	$(MAKE) -C $(M5BUILDROOT) clean
 
-toolchain:
-	if [ ! -e $(BUILDROOT)/output/host/bin/arm-buildroot-linux-gnueabihf-gcc ]; then \
-		$(MAKE) buildroot; \
-	fi
-
-DEFAULT_BRANCH_LINUX=mstar_dev_v5_8_rebase_cleanup
-DEFAULT_BRANCH_UBOOT=m5iplwork
-
-bootstrap:
-	git clone git@github.com:fifteenhex/linux.git
-	git -C linux checkout --track origin/$(DEFAULT_BRANCH_LINUX)
-	cp linux.config linux/.config
-	git clone git@github.com:breadbee/u-boot.git
-	git -C u-boot checkout --track origin/$(DEFAULT_BRANCH_UBOOT)
-	git clone git@github.com:breadbee/breadbee_buildroot.git $(BBBUILDROOT)
-	$(MAKE) -C $(BBBUILDROOT) bootstrap
-	git clone git@github.com:fifteenhex/mstarblobs.git
-
-	git clone git@github.com:fifteenhex/buildroot_mercury5.git $(M5BUILDROOT)
-	$(MAKE) -C $(M5BUILDROOT) bootstrap
-
 LINUX_ARGS=ARCH=arm -j8 CROSS_COMPILE=$(CROSS_COMPILE)
 linux:
 	- rm linux/arch/arm/boot/zImage
@@ -98,6 +101,8 @@ linux_config:
 linux_clean:
 	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
 		$(MAKE) -C linux $(LINUX_ARGS) clean
+
+# uboot targets, only for breadbee and m5 for now
 
 UBOOT_BB=$(OUTPUTS)/dev_u-boot_breadbee.img
 IPL_BB=$(OUTPUTS)/dev_ipl_breadbee
