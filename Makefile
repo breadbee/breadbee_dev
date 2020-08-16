@@ -99,13 +99,20 @@ linux_clean:
 	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
 		$(MAKE) -C linux $(LINUX_ARGS) clean
 
+UBOOT_BB=$(OUTPUTS)/dev_u-boot_breadbee.img
+IPL_BB=$(OUTPUTS)/dev_ipl_breadbee
+
 uboot_bb: toolchain outputsdir
 	$(MAKE) -C u-boot clean
 	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
 		$(MAKE) -C u-boot msc313_breadbee_defconfig
 	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
 		$(MAKE) -C u-boot CROSS_COMPILE=$(CROSS_COMPILE) -j8
-	cp u-boot/u-boot.img $(OUTPUTS)/dev_u-boot.img
+	cp u-boot/u-boot.img $(UBOOT_BB)
+	cp u-boot/ipl $(IPL_BB)
+
+UBOOT_M5=$(OUTPUTS)/dev_u-boot_m5.img
+IPL_M5=$(OUTPUTS)/dev_ipl_m5
 
 uboot_m5: toolchain outputsdir
 	$(MAKE) -C u-boot clean
@@ -113,7 +120,8 @@ uboot_m5: toolchain outputsdir
 		$(MAKE) -C u-boot mercury5_defconfig
 	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
 		$(MAKE) -C u-boot CROSS_COMPILE=$(CROSS_COMPILE) -j8
-	cp u-boot/u-boot.img $(OUTPUTS)/dev_m5_u-boot.img
+	cp u-boot/u-boot.img $(UBOOT_M5)
+	cp u-boot/ipl $(IPL_M5)
 
 uboot_clean:
 	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
@@ -138,8 +146,8 @@ nor_ipl: uboot_bb kernel_breadbee.fit
 	dd if=/dev/zero ibs=1M count=16 | tr "\000" "\377" > nor_ipl
 	##dd conv=notrunc if=IPL.bin of=nor_ipl bs=1k seek=16
 	dd conv=notrunc if=mstarblobs/ipl_ddr3.bin of=nor_ipl bs=1k seek=16
-	dd conv=notrunc if=u-boot/ipl of=nor_ipl bs=1k seek=64
-	dd conv=notrunc if=u-boot/u-boot.img of=nor_ipl bs=1k seek=128
+	dd conv=notrunc if=$(IPL_BB) of=nor_ipl bs=1k seek=64
+	dd conv=notrunc if=$(UBOOT_BB) of=nor_ipl bs=1k seek=128
 	dd conv=notrunc if=$(OUTPUTS)/dev_kernel_breadbee.fit of=nor_ipl bs=1k seek=512
 	mv nor_ipl $(OUTPUTS)/nor_ipl
 
@@ -206,14 +214,14 @@ copy_kernel_to_sd: kernel_m5.fit
 	- sudo cp outputs/dev_kernel_m5.fit /mnt/kernel.fit
 	sudo umount /mnt
 
-copy_spl_m5_to_sd: spl_m5
+copy_spl_m5_to_sd: uboot_m5
 	sudo mount /dev/sdc1 /mnt
-	- sudo cp outputs/spl_m5 /mnt/ipl
+	- sudo cp $(IPL_M5) /mnt/ipl
 	sudo umount /mnt
 
 copy_uboot_m5_to_sd: uboot_m5
 	sudo mount /dev/sdc1 /mnt
-	- sudo cp outputs/dev_m5_u-boot.img /mnt/u-boot.img
+	- sudo cp $(UBOOT_M5) /mnt/u-boot.img
 	sudo umount /mnt
 
 copy_rtk_m5_to_sd: rtk
