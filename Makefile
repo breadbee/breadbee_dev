@@ -9,7 +9,7 @@ OUTPUTS=$(shell realpath ./outputs/)
 BUILDROOT=$(BBBUILDROOT)/buildroot
 
 .PHONY: toolchain \
-	buildroot \
+	buildroot_bb \
 	buildroot_m5 \
 	uboot_bb \
 	uboot_m5 \
@@ -34,8 +34,11 @@ outputsdir:
 # one is the breadbee version with the bits it needs
 # the other is the m5 version that is basically stock.
 
-buildroot:
+buildroot_bb:
 	$(MAKE) -C $(BBBUILDROOT)
+
+buildroot_bb_clean:
+	$(MAKE) -C $(BBBUILDROOT) clean
 
 buildroot_m5:
 	$(MAKE) -C $(M5BUILDROOT)
