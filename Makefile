@@ -127,18 +127,6 @@ uboot_clean:
 	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
 		$(MAKE) -C u-boot clean
 
-# this is to upload the resulting binaries to a tftp server to load on the
-# target
-upload: linux uboot_bb kernel_breadbee.fit
-	scp outputs/dev_kernel_breadbee.fit tftp:/srv/tftp/dev_kernel_breadbee.fit
-#	scp linux/arch/arm/boot/zImage.msc313e tftp:/srv/tftp/zImage.msc313e
-#	scp linux/arch/arm/boot/dts/infinity3-msc313e-breadbee.dtb tftp:/srv/tftp/msc313e-breadbee.dtb
-#	scp u-boot/spl/u-boot-spl.bin tftp:/srv/tftp/ubootspl.msc313e
-#	scp u-boot/u-boot.img tftp:/srv/tftp/uboot.msc313e
-#	scp kernel.fit tftp:/srv/tftp/kernel.fit.breadbee
-#	scp linux/arch/arm/boot/zImage.msc313d tftp:/srv/tftp/zImage.msc313d
-#	scp buildroot/output/images/rootfs.squashfs tftp:/srv/tftp/rootfs.msc313e
-
 # this is a nor sized image (because flashrom doesn't support writing partial images)
 # that starts with the mstar IPL
 nor_ipl: uboot_bb kernel_breadbee.fit
