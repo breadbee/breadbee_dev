@@ -80,7 +80,7 @@ mw 0x16002000 0x1e0; setenv serverip 192.168.3.235; setenv loadaddr 0x22000000; 
 
 ## Booting up the outputs
 
-### Booting the dev kernel over TFTP
+#### Booting the dev kernel over TFTP
 
 ```
 setenv serverip 192.168.3.235; setenv loadaddr 0x22000000; dhcp dev_kernel_breadbee.fit; bootm ${loadaddr}"#"${bb_boardtype}${bb_config}
@@ -112,12 +112,13 @@ setenv serverip 192.168.3.1; setenv loadaddr 0x22000000; dhcp kernel.fit.breadbe
 
 ```fatload mmc 0:1 $loadaddr kernel.fit; bootm $loadaddr#mirrorcam```
 
-# Replacing u-boot
+
+# Replacing u-boot on the breadbee
 
 ## Via ethernet
 
 ```
-setenv serverip 192.168.3.235; if dhcp dev_u-boot.img; then; sf probe; sf erase 0x20000 0x50000; sf write 0x22000000 0x20000 0x50000; fi
+setenv serverip 192.168.3.235; if dhcp dev_u-boot_breadbee.img; then; sf probe; sf erase 0x20000 0x50000; sf write 0x22000000 0x20000 0x50000; fi
 ```
 
 ## Via uart
