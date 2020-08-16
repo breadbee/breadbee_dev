@@ -11,7 +11,7 @@ BUILDROOT=$(BBBUILDROOT)/buildroot
 .PHONY: toolchain \
 	buildroot \
 	buildroot_m5 \
-	uboot \
+	uboot_bb \
 	uboot_m5 \
 	linux \
 	upload \
@@ -19,7 +19,9 @@ BUILDROOT=$(BBBUILDROOT)/buildroot
 	kernel_m5.fit \
 	kernel_breadbee.fit \
 	rtk \
-	squeekyclean
+	squeekyclean \
+	nor_ipl \
+	patchpushpreflight
 
 CROSS_COMPILE=arm-buildroot-linux-gnueabihf-
 
@@ -41,13 +43,23 @@ buildroot_m5:
 	# so copy that into the outputs dir
 	cp $(M5BUILDROOT)/buildroot/output/images/rootfs.cpio $(OUTPUTS)/m5_rootfs.cpio
 
+buildroot_m5_config:
+	$(MAKE) -C $(M5BUILDROOT) buildroot_config
+
+buildroot_m5_linux_config:
+	$(MAKE) -C $(M5BUILDROOT) buildroot_linux_menuconfig
+
+buildroot_m5_linux_update:
+	$(MAKE) -C $(M5BUILDROOT) linux_update
+	$(MAKE) -C $(M5BUILDROOT) linux_clean
+
+buildroot_m5_clean:
+	$(MAKE) -C $(M5BUILDROOT) clean
+
 toolchain:
 	if [ ! -e $(BUILDROOT)/output/host/bin/arm-buildroot-linux-gnueabihf-gcc ]; then \
 		$(MAKE) buildroot; \
 	fi
-
-outputsdir:
-	mkdir -p $(OUTPUTS)
 
 DEFAULT_BRANCH_LINUX=mstar_dev_v5_8_rebase_cleanup
 DEFAULT_BRANCH_UBOOT=m5iplwork
@@ -84,7 +96,7 @@ linux_clean:
 	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
 		$(MAKE) -C linux $(LINUX_ARGS) clean
 
-uboot: toolchain outputsdir
+uboot_bb: toolchain outputsdir
 	$(MAKE) -C u-boot clean
 	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
 		$(MAKE) -C u-boot msc313_breadbee_defconfig
@@ -106,7 +118,7 @@ uboot_clean:
 
 # this is to upload the resulting binaries to a tftp server to load on the
 # target
-upload: linux uboot kernel_breadbee.fit
+upload: linux uboot_bb kernel_breadbee.fit
 	scp outputs/dev_kernel_breadbee.fit tftp:/srv/tftp/dev_kernel_breadbee.fit
 #	scp linux/arch/arm/boot/zImage.msc313e tftp:/srv/tftp/zImage.msc313e
 #	scp linux/arch/arm/boot/dts/infinity3-msc313e-breadbee.dtb tftp:/srv/tftp/msc313e-breadbee.dtb
@@ -116,31 +128,21 @@ upload: linux uboot kernel_breadbee.fit
 #	scp linux/arch/arm/boot/zImage.msc313d tftp:/srv/tftp/zImage.msc313d
 #	scp buildroot/output/images/rootfs.squashfs tftp:/srv/tftp/rootfs.msc313e
 
-
-spl: uboot
-	python3 u-boot/board/thingyjp/breadbee/fix_ipl_hdr.py \
-		-i u-boot/spl/u-boot-spl.bin \
-		-o $(OUTPUTS)/spl
-
-spl_m5: uboot_m5
-	python3 u-boot/board/thingyjp/breadbee/fix_ipl_hdr.py \
-		-i u-boot/spl/u-boot-spl.bin \
-		-o $(OUTPUTS)/spl_m5
-
 # this is a nor sized image (because flashrom doesn't support writing partial images)
 # that starts with the mstar IPL
-nor_ipl: uboot kernel_breadbee.fit spl_padded
+nor_ipl: uboot_bb kernel_breadbee.fit
 	rm -f nor_ipl
 	dd if=/dev/zero ibs=1M count=16 | tr "\000" "\377" > nor_ipl
 	##dd conv=notrunc if=IPL.bin of=nor_ipl bs=1k seek=16
-	dd conv=notrunc if=ipl_ddr3.bin of=nor_ipl bs=1k seek=16
-	dd conv=notrunc if=spl_padded of=nor_ipl bs=1k seek=64
+	dd conv=notrunc if=mstarblobs/ipl_ddr3.bin of=nor_ipl bs=1k seek=16
+	dd conv=notrunc if=u-boot/ipl of=nor_ipl bs=1k seek=64
 	dd conv=notrunc if=u-boot/u-boot.img of=nor_ipl bs=1k seek=128
-	dd conv=notrunc if=kernel_breadbee.fit of=nor_ipl bs=1k seek=512
+	dd conv=notrunc if=$(OUTPUTS)/dev_kernel_breadbee.fit of=nor_ipl bs=1k seek=512
+	mv nor_ipl $(OUTPUTS)/nor_ipl
 
 # this is a nor sized image that starts with the u-boot SPL. This will require the
 # SPL do the DDR setup etc.
-nor: uboot
+nor: uboot_bb
 	rm -f nor
 	dd if=/dev/zero ibs=1M count=16 | tr "\000" "\377" > nor
 	dd conv=notrunc if=u-boot/spl/u-boot-spl.bin of=nor bs=1k seek=16
@@ -180,9 +182,11 @@ push_linux_m5_config:
 		ARCH=arm -j8 CROSS_COMPILE=$(CROSS_COMPILE) savedefconfig
 	cp linux/defconfig $(M5BUILDROOT)/br2midrive08/board/70mai/midrive08/linux.config
 
-fix_brick:
-	sudo flashrom --programmer ch341a_spi -w nor_ipl -l /media/junk/hardware/breadbee/flashrom_layout -i ipl_uboot_spl -N
-	sudo flashrom --programmer ch341a_spi -w nor_ipl -l /media/junk/hardware/breadbee/flashrom_layout -i uboot -N
+fix_brick: nor_ipl
+	sudo flashrom --programmer ch341a_spi -w $(OUTPUTS)/nor_ipl \
+		-l /media/junk/hardware/breadbee/flashrom_layout -i ipl_uboot_spl -N
+	sudo flashrom --programmer ch341a_spi -w $(OUTPUTS)/nor_ipl \
+		-l /media/junk/hardware/breadbee/flashrom_layout -i uboot -N
 
 fix_brick_spl:
 	sudo flashrom --programmer ch341a_spi -w nor -l /media/junk/hardware/breadbee/flashrom_layout -i ipl_uboot_spl -N
@@ -216,3 +220,12 @@ copy_rtk_m5_to_sd: rtk
 
 run_tftpd: buildroot
 	$(MAKE) -C $(BBBUILDROOT) run_tftpd
+
+cleanuplinuxtree:
+	git -C linux clean -fd
+
+
+patchpushpreflight: cleanuplinuxtree kernel_m5.fit
+
+checkdtbindings:
+	PATH=~/.local/bin/:$(PATH) $(MAKE) -C linux dt_binding_check -j12

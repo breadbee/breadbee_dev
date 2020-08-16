@@ -27,10 +27,12 @@ for B in `seq 0 63`; do BH=`echo obase=16\;ibase=10\;$B| bc;`; OFF=`echo obase=1
 
 
 udhcpc && mount /dev/mmcblk0p1 /mnt && cd /mnt && tftp -g -r dev_kernel_m5.fit 192.168.3.235
-fatload mmc 0:1 $loadaddr dev_kernel_m5.fit; bootm $loadaddr#midrive08
+fatload mmc 0:1 $loadaddr dev_kernel_m5.fit; bootm $loadaddr#midrived08
+fatload mmc 0:1 $loadaddr dev_kernel_m5.fit; bootm $loadaddr#midrived06
+
 
 setenv bootargs "console=ttyS0,115200 root=/dev/mmcblk0p2 rootwait clk_ignore_unused earlyprintk=serial,ttyS0,115200"
-fatload mmc 0:1 $loadaddr kernel.fit; bootm $loadaddr#midrive08
+fatload mmc 0:1 $loadaddr kernel.fit; bootm $loadaddr#midrived08
 
 ## Testing DMA
 
