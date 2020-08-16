@@ -14,7 +14,6 @@ BUILDROOT=$(BBBUILDROOT)/buildroot
 	uboot_bb \
 	uboot_m5 \
 	linux \
-	upload \
 	outputsdir \
 	kernel_m5.fit \
 	kernel_breadbee.fit \
