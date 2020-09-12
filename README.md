@@ -127,3 +127,7 @@ setenv serverip 192.168.3.235; if dhcp dev_u-boot_breadbee.img; then; sf probe; 
 if loady ${loadaddr} 460800; then; sf probe; sf erase 0x20000 0x50000; sf write 0x22000000 0x20000 0x50000; fi
 ```
 
+```
+if loady ${loadaddr} 460800; then; sf probe; sf erase 0x10000 0x10000; sf write 0x22000000 0x10000 0x10000; fi
+```
+
