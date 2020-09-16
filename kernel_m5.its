@@ -21,7 +21,7 @@
 			};
 		};
 		fdt@0 {
-			data = /incbin/("linux/arch/arm/boot/dts/mercury5-ssc8336n-midrived06.dtb");
+			data = /incbin/("linux/arch/arm/boot/dts/mstar-mercury5-ssc8336n-midrived06.dtb");
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
@@ -34,7 +34,7 @@
 			};
 		};
 		fdt@1 {
-			data = /incbin/("linux/arch/arm/boot/dts/mercury5-ssc8336n-midrived08.dtb");
+			data = /incbin/("linux/arch/arm/boot/dts/mstar-mercury5-ssc8336n-midrived08.dtb");
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
@@ -47,7 +47,7 @@
 			};
 		};
 		fdt@2 {
-			data = /incbin/("linux/arch/arm/boot/dts/mercury5-ssc8336-mirrorcam.dtb");
+			data = /incbin/("linux/arch/arm/boot/dts/mstar-mercury5-ssc8336-mirrorcam.dtb");
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
@@ -76,7 +76,7 @@
 	};
 
 	configurations {
-		default = "midrive06";
+		default = "midrived06";
 		midrived06 {
 			kernel = "kernel@0";
 			fdt = "fdt@0";

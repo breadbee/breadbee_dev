@@ -63,6 +63,13 @@ buildroot_bb:
 buildroot_bb_clean:
 	$(MAKE) -C $(BBBUILDROOT) clean
 
+buildroot_bb_config:
+	$(MAKE) -C $(BBBUILDROOT) buildroot_config
+
+buildroot_bb_linux_update:
+	$(MAKE) -C $(BBBUILDROOT) linux_update
+	$(MAKE) -C $(BBBUILDROOT) linux_clean
+
 buildroot_m5:
 	$(MAKE) -C $(M5BUILDROOT)
 	# We might want a generic rootfs to embed into a kernel,
@@ -82,7 +89,7 @@ buildroot_m5_linux_update:
 buildroot_m5_clean:
 	$(MAKE) -C $(M5BUILDROOT) clean
 
-LINUX_ARGS=ARCH=arm -j8 CROSS_COMPILE=$(CROSS_COMPILE)
+LINUX_ARGS=ARCH=arm -j8 CROSS_COMPILE=$(CROSS_COMPILE) CONFIG_INITRAMFS_SOURCE=../outputs/m5_rootfs.cpio
 linux:
 	- rm linux/arch/arm/boot/zImage
 	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
@@ -92,6 +99,18 @@ linux:
 	# these are for booting with the old mstar u-boot that can't load a dtb
 	#cat linux/arch/arm/boot/zImage linux/arch/arm/boot/dts/msc313d-mc400l.dtb > \
 	#	$(OUTPUTS)/zImage.msc313d
+
+linux_internalinitramfs:
+	- rm linux/arch/arm/boot/zImage
+	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
+		$(MAKE) -C linux DTC_FLAGS=--symbols \
+		$(LINUX_ARGS) \
+		CONFIG_INITRAMFS_SOURCE=../outputs/m5_rootfs.cpio \
+		zImage dtbs
+	# these are for booting with the old mstar u-boot that can't load a dtb
+	#cat linux/arch/arm/boot/zImage linux/arch/arm/boot/dts/msc313d-mc400l.dtb > \
+	#	$(OUTPUTS)/zImage.msc313d
+
 
 linux_config:
 	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
@@ -105,6 +124,13 @@ linux_clean:
 
 UBOOT_BB=$(OUTPUTS)/dev_u-boot_breadbee.img
 IPL_BB=$(OUTPUTS)/dev_ipl_breadbee
+
+uboot_generic:
+	$(MAKE) -C u-boot clean
+	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
+		$(MAKE) -C u-boot mstarv7_defconfig
+	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
+		$(MAKE) -C u-boot CROSS_COMPILE=$(CROSS_COMPILE) -j8
 
 uboot_bb: toolchain outputsdir
 	$(MAKE) -C u-boot clean
@@ -158,13 +184,14 @@ kernel_m5.fit: buildroot_m5 outputsdir linux
 
 # This builds a FIT image with the kernel and the right device trees for breadbee.
 kernel_breadbee.fit: outputsdir linux
-	mkimage -f kernel_breadbee.its \
+	$(BBBUILDROOT)/buildroot/output/host/bin/mkimage -f kernel_breadbee.its \
 		$(OUTPUTS)/dev_$@
+	chmod go+r $(OUTPUTS)/dev_$@
 
 # This builds kernel image with the DTB appended to the end for the ssd201htv2 with
 # vendor u-boot
-kernel_ssd201htv2: outputsdir linux buildroot_m5
-	cat linux/arch/arm/boot/zImage linux/arch/arm/boot/dts/infinity2m-ssd202-ssd201htv2.dtb > \
+kernel_ssd201htv2: outputsdir buildroot_m5 linux_internalinitramfs
+	cat linux/arch/arm/boot/zImage linux/arch/arm/boot/dts/mstar-infinity2m-ssd202d-ssd201htv2.dtb > \
 		$(OUTPUTS)/$@
 
 # This builds kernel image with the DTB appended to the end for the mcf50 with
@@ -221,14 +248,20 @@ copy_rtk_m5_to_sd: rtk
 	- sudo cp outputs/rtk /mnt/rtk
 	sudo umount /mnt
 
-run_tftpd: buildroot
+run_tftpd: buildroot_bb
 	$(MAKE) -C $(BBBUILDROOT) run_tftpd
 
 cleanuplinuxtree:
+	make -C linux clean
 	git -C linux clean -fd
 
-
-patchpushpreflight: cleanuplinuxtree kernel_m5.fit
+patchpushpreflight: cleanuplinuxtree linux
 
 checkdtbindings:
+	pip3 install git+https://github.com/devicetree-org/dt-schema.git@master
+	PATH=~/.local/bin/:$(PATH) $(MAKE) -C linux clean
 	PATH=~/.local/bin/:$(PATH) $(MAKE) -C linux dt_binding_check -j12
+
+mainlining_generate_series:
+	git -C linux format-patch --cover-letter -v2 torvalds/master
+

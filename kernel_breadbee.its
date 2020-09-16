@@ -21,7 +21,7 @@
 			};
 		};
 		fdt@0 {
-			data = /incbin/("linux/arch/arm/boot/dts/infinity3-msc313e-breadbee.dtb");
+			data = /incbin/("linux/arch/arm/boot/dts/mstar-infinity3-msc313e-breadbee.dtb");
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
@@ -34,7 +34,7 @@
 			};
 		};
 		fdt@1 {
-			data = /incbin/("linux/arch/arm/boot/dts/infinity-msc313-breadbee_crust.dtb");
+			data = /incbin/("linux/arch/arm/boot/dts/mstar-infinity-msc313-breadbee_crust.dtb");
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
@@ -46,8 +46,8 @@
 				algo = "sha1";
 			};
 		};
-		fdt@2 {
-			data = /incbin/("linux/arch/arm/boot/dts/infinity3-msc313e-wiibee.dtb");
+/*		fdt@2 {
+			data = /incbin/("linux/arch/arm/boot/dts/mstar-infinity3-msc313e-wiibee.dtb");
 			type = "flat_dt";
 			arch = "arm";
 			compression = "none";
@@ -59,6 +59,7 @@
 				algo = "sha1";
 			};
 		};
+*/
 		/include/ "bbbuildroot/buildroot/output/images/breadbee-overlays/fdtlist"
 	};
 
@@ -72,10 +73,11 @@
 			kernel = "kernel@0";
 			fdt = "fdt@1";
 		};
-		wiibee {
+/*		wiibee {
 			kernel = "kernel@0";
 			fdt = "fdt@2";
 		};
+*/
 		/include/ "bbbuildroot/buildroot/output/images/breadbee-overlays/configlist"
 	};
 };
