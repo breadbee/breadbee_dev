@@ -194,6 +194,12 @@ kernel_ssd201htv2: outputsdir buildroot_m5 linux_internalinitramfs
 	cat linux/arch/arm/boot/zImage linux/arch/arm/boot/dts/mstar-infinity2m-ssd202d-ssd201htv2.dtb > \
 		$(OUTPUTS)/$@
 
+# This builds kernel image with the DTB appended to the end for the gw302 with
+# vendor u-boot
+kernel_gw302: outputsdir buildroot_m5 linux_internalinitramfs
+	cat linux/arch/arm/boot/zImage linux/arch/arm/boot/dts/mstar-infinity2m-ssd202d-gw302.dtb > \
+		$(OUTPUTS)/$@
+
 # This builds kernel image with the DTB appended to the end for the mcf50 with
 # vendor u-boot
 kernel_mcf50: outputsdir linux buildroot_m5
