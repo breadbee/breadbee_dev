@@ -5,13 +5,17 @@
 
 BBBUILDROOT=$(shell realpath ./bbbuildroot)
 M5BUILDROOT=$(shell realpath ./m5buildroot)
+BUILDROOT_GW30X=$(shell realpath ./buildroot_gw30x)
+
 OUTPUTS=$(shell realpath ./outputs/)
 BUILDROOT=$(BBBUILDROOT)/buildroot
 
 .PHONY: toolchain \
 	buildroot_bb \
 	buildroot_m5 \
+	buildroot-gw30x \
 	uboot_bb \
+	uboot-generic \
 	uboot_m5 \
 	linux \
 	outputsdir \
@@ -89,6 +93,12 @@ buildroot_m5_linux_update:
 buildroot_m5_clean:
 	$(MAKE) -C $(M5BUILDROOT) clean
 
+buildroot-gw30x:
+	$(MAKE) -C $(BUILDROOT_GW30X)
+
+buildroot-menuconfig-gw30x:
+	$(MAKE) -C $(BUILDROOT_GW30X) buildroot-menuconfig
+
 LINUX_ARGS=ARCH=arm -j8 CROSS_COMPILE=$(CROSS_COMPILE) CONFIG_INITRAMFS_SOURCE=../outputs/m5_rootfs.cpio
 linux:
 	- rm linux/arch/arm/boot/zImage
@@ -125,12 +135,13 @@ linux_clean:
 UBOOT_BB=$(OUTPUTS)/dev_u-boot_breadbee.img
 IPL_BB=$(OUTPUTS)/dev_ipl_breadbee
 
-uboot_generic:
+uboot-generic:
 	$(MAKE) -C u-boot clean
 	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
 		$(MAKE) -C u-boot mstarv7_defconfig
 	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
 		$(MAKE) -C u-boot CROSS_COMPILE=$(CROSS_COMPILE) -j8
+	cp u-boot/ipl $(OUTPUTS)/generic-ipl
 
 uboot_bb: toolchain outputsdir
 	$(MAKE) -C u-boot clean
@@ -193,6 +204,12 @@ kernel_breadbee.fit: outputsdir linux
 kernel_ssd201htv2: outputsdir buildroot_m5 linux_internalinitramfs
 	cat linux/arch/arm/boot/zImage linux/arch/arm/boot/dts/mstar-infinity2m-ssd202d-ssd201htv2.dtb > \
 		$(OUTPUTS)/$@
+
+# This builds a FIT image with the kernel and the right device trees for ssd20xd devices
+kernel_ssd20xd.fit: outputsdir linux
+	$(BBBUILDROOT)/buildroot/output/host/bin/mkimage -f kernel_ssd20xd.its \
+		$(OUTPUTS)/dev_$@
+	chmod go+r $(OUTPUTS)/dev_$@
 
 # This builds kernel image with the DTB appended to the end for the gw302 with
 # vendor u-boot

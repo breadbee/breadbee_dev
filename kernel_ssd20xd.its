@@ -1,0 +1,78 @@
+/dts-v1/;
+
+/ {
+	description = "Sigmastar SSD20XD machines";
+	#address-cells = <1>;
+
+	images {
+		kernel@0 {
+			data = /incbin/("linux/arch/arm/boot/zImage");
+			type = "kernel";
+			arch = "arm";
+			os = "linux";
+			compression = "none";
+			load = <0x22800000>;
+                        entry = <0x22800000>;
+			hash@1 {
+				algo = "crc32";
+			};
+			hash@2 {
+				algo = "sha1";
+			};
+		};
+		fdt@0 {
+			data = /incbin/("linux/arch/arm/boot/dts/mstar-infinity2m-ssd202d-gw302.dtb");
+			type = "flat_dt";
+			arch = "arm";
+			compression = "none";
+			load = <0x22d00000>;
+			hash@1 {
+				algo = "crc32";
+			};
+			hash@2 {
+				algo = "sha1";
+			};
+		};
+		fdt@1 {
+			data = /incbin/("linux/arch/arm/boot/dts/mstar-infinity2m-ssd202d-ssd201htv2.dtb");
+			type = "flat_dt";
+			arch = "arm";
+			compression = "none";
+			load = <0x22d00000>;
+			hash@1 {
+				algo = "crc32";
+			};
+			hash@2 {
+				algo = "sha1";
+			};
+		};
+		ramdisk@0 {
+			data = /incbin/("m5buildroot/buildroot/output/images/rootfs.cpio.gz");
+                        type = "ramdisk";
+                        arch = "arm";
+			os = "linux";
+                        compression = "none";
+                        load = <0x22e00000>;
+                        hash@1 {
+                                algo = "crc32";
+                        };
+                        hash@2 {
+                                algo = "sha1";
+                        };
+		};
+	};
+
+	configurations {
+		default = "gw302";
+		gw302 {
+			kernel = "kernel@0";
+			fdt = "fdt@0";
+			ramdisk = "ramdisk@0";
+		};
+		ssd201htv2 {
+			kernel = "kernel@0";
+			fdt = "fdt@1";
+			ramdisk = "ramdisk@0";
+		};
+	};
+};
