@@ -16,6 +16,7 @@ BUILDROOT=$(BBBUILDROOT)/buildroot
 	buildroot-gw30x \
 	uboot_bb \
 	uboot-generic \
+	uboot-gw302 \
 	uboot_m5 \
 	linux \
 	outputsdir \
@@ -135,13 +136,21 @@ linux_clean:
 UBOOT_BB=$(OUTPUTS)/dev_u-boot_breadbee.img
 IPL_BB=$(OUTPUTS)/dev_ipl_breadbee
 
-uboot-generic:
+uboot-generic: outputsdir
 	$(MAKE) -C u-boot clean
 	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
 		$(MAKE) -C u-boot mstarv7_defconfig
 	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
 		$(MAKE) -C u-boot CROSS_COMPILE=$(CROSS_COMPILE) -j8
 	cp u-boot/ipl $(OUTPUTS)/generic-ipl
+
+uboot-gw302:
+	$(MAKE) -C u-boot clean
+	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
+		$(MAKE) -C u-boot mstar_infinity2m_gw302_defconfig
+	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
+		$(MAKE) -C u-boot CROSS_COMPILE=$(CROSS_COMPILE) -j8
+	cp u-boot/ipl $(OUTPUTS)/gw302-ipl
 
 uboot_bb: toolchain outputsdir
 	$(MAKE) -C u-boot clean
