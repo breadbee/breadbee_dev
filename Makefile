@@ -35,8 +35,8 @@ outputsdir:
 	mkdir -p $(OUTPUTS)
 
 # Prepare the environment
-DEFAULT_BRANCH_LINUX=mstar_dev_v5_8_rebase_cleanup
-DEFAULT_BRANCH_UBOOT=m5iplwork
+DEFAULT_BRANCH_LINUX=mstar_v5_11_rebase
+DEFAULT_BRANCH_UBOOT=mstar_rebase_mainline
 
 bootstrap:
 	git clone git@github.com:fifteenhex/linux.git
