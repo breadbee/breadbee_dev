@@ -78,6 +78,15 @@ This builds a kernel with an appended DTB for the gw302 with the vendor u-boot
 mw 0x16002000 0x1e0; setenv serverip 192.168.3.235; setenv loadaddr 0x22000000; dhcp kernel_gw302; go ${loadaddr}
 ```
 
+### kernel_ssd20x.fit
+
+This builds a generic kernel for ssd20xd machines with an updated u-boot
+
+```
+setenv serverip 192.168.3.235; setenv loadaddr 0x22000000; dhcp dev_kernel_ssd20xd.fit; bootm ${loadaddr}
+```
+
+
 ### kernel_mcf50
 
 This builds a kernel with an appended DTB for the mcf50 with the vendor u-boot
