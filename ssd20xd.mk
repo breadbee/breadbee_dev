@@ -1,3 +1,5 @@
+BUILDROOT_GW30X=$(shell realpath ./buildroot_gw30x)
+
 buildroot-gw30x:
 	$(MAKE) -C $(BUILDROOT_GW30X)
 

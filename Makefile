@@ -5,7 +5,6 @@
 
 BBBUILDROOT=$(shell realpath ./bbbuildroot)
 M5BUILDROOT=$(shell realpath ./m5buildroot)
-BUILDROOT_GW30X=$(shell realpath ./buildroot_gw30x)
 
 OUTPUTS=$(shell realpath ./outputs/)
 BUILDROOT=$(BBBUILDROOT)/buildroot
