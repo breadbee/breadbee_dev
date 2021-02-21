@@ -34,7 +34,7 @@ outputsdir:
 	mkdir -p $(OUTPUTS)
 
 # Prepare the environment
-DEFAULT_BRANCH_LINUX=mstar_v5_11_rebase
+DEFAULT_BRANCH_LINUX=mstar_v5_12_rebase
 DEFAULT_BRANCH_UBOOT=mstar_rebase_mainline
 
 bootstrap:
@@ -199,16 +199,6 @@ push_linux_m5_config:
 		$(MAKE) -C linux DTC_FLAGS=--symbols \
 		ARCH=arm -j8 CROSS_COMPILE=$(CROSS_COMPILE) savedefconfig
 	cp linux/defconfig $(M5BUILDROOT)/br2midrive08/board/70mai/midrive08/linux.config
-
-fix_brick: nor_ipl
-	sudo flashrom --programmer ch341a_spi -w $(OUTPUTS)/nor_ipl \
-		-l /media/junk/hardware/breadbee/flashrom_layout -i ipl_uboot_spl -N
-	sudo flashrom --programmer ch341a_spi -w $(OUTPUTS)/nor_ipl \
-		-l /media/junk/hardware/breadbee/flashrom_layout -i uboot -N
-
-fix_brick_spl:
-	sudo flashrom --programmer ch341a_spi -w nor -l /media/junk/hardware/breadbee/flashrom_layout -i ipl_uboot_spl -N
-	sudo flashrom --programmer ch341a_spi -w nor -l /media/junk/hardware/breadbee/flashrom_layout -i uboot -N
 
 rtk: uboot_m5
 	cp u-boot/u-boot.bin $(OUTPUTS)/rtk
