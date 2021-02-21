@@ -93,11 +93,12 @@ buildroot_m5_linux_update:
 buildroot_m5_clean:
 	$(MAKE) -C $(M5BUILDROOT) clean
 
-LINUX_ARGS=ARCH=arm -j8 CROSS_COMPILE=$(CROSS_COMPILE) CONFIG_INITRAMFS_SOURCE=../outputs/m5_rootfs.cpio
+LINUX_ARGS=ARCH=arm -j8 CROSS_COMPILE=$(CROSS_COMPILE)
 linux:
 	- rm linux/arch/arm/boot/zImage
 	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
 		$(MAKE) -C linux DTC_FLAGS=--symbols \
+		W=1 \
 		$(LINUX_ARGS) \
 		zImage dtbs
 	# these are for booting with the old mstar u-boot that can't load a dtb
@@ -126,9 +127,6 @@ linux_clean:
 
 # uboot targets, only for breadbee and m5 for now
 
-UBOOT_BB=$(OUTPUTS)/dev_u-boot_breadbee.img
-IPL_BB=$(OUTPUTS)/dev_ipl_breadbee
-
 uboot-generic: outputsdir
 	$(MAKE) -C u-boot clean
 	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
@@ -136,15 +134,6 @@ uboot-generic: outputsdir
 	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
 		$(MAKE) -C u-boot CROSS_COMPILE=$(CROSS_COMPILE) -j8
 	cp u-boot/ipl $(OUTPUTS)/generic-ipl
-
-uboot_bb: toolchain outputsdir
-	$(MAKE) -C u-boot clean
-	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
-		$(MAKE) -C u-boot msc313_breadbee_defconfig
-	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
-		$(MAKE) -C u-boot CROSS_COMPILE=$(CROSS_COMPILE) -j8
-	cp u-boot/u-boot.img $(UBOOT_BB)
-	cp u-boot/ipl $(IPL_BB)
 
 UBOOT_M5=$(OUTPUTS)/dev_u-boot_m5.img
 IPL_M5=$(OUTPUTS)/dev_ipl_m5
@@ -265,3 +254,4 @@ mainlining_generate_series:
 	git -C linux format-patch --cover-letter -v2 torvalds/master
 
 include ssd20xd.mk
+include breadbee.mk

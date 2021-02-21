@@ -129,6 +129,14 @@ setenv serverip 192.168.3.1; setenv loadaddr 0x22000000; dhcp kernel.fit.breadbe
 
 ```fatload mmc 0:1 $loadaddr kernel.fit; bootm $loadaddr#mirrorcam```
 
+# Chain loading u-boot from another u-boot
+
+```
+setenv serverip 192.168.3.235; setenv loadaddr 0x22000000; dhcp generic-ipl;
+cp.b $loadaddr 0xa0000000 0xbb80
+go 0xa0000000
+```
+
 
 # Replacing u-boot on the breadbee
 
