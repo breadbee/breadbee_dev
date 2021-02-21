@@ -188,31 +188,8 @@ push_linux_m5_config:
 		ARCH=arm -j8 CROSS_COMPILE=$(CROSS_COMPILE) savedefconfig
 	cp linux/defconfig $(M5BUILDROOT)/br2midrive08/board/70mai/midrive08/linux.config
 
-rtk: uboot_m5
-	cp u-boot/u-boot.bin $(OUTPUTS)/rtk
-
 squeekyclean:
 	$(MAKE) -C $(BBBUILDROOT) clean
-
-copy_kernel_to_sd: kernel_m5.fit
-	sudo mount /dev/sdc1 /mnt
-	- sudo cp outputs/dev_kernel_m5.fit /mnt/kernel.fit
-	sudo umount /mnt
-
-copy_spl_m5_to_sd: uboot_m5
-	sudo mount /dev/sdc1 /mnt
-	- sudo cp $(IPL_M5) /mnt/ipl
-	sudo umount /mnt
-
-copy_uboot_m5_to_sd: uboot_m5
-	sudo mount /dev/sdc1 /mnt
-	- sudo cp $(UBOOT_M5) /mnt/u-boot.img
-	sudo umount /mnt
-
-copy_rtk_m5_to_sd: rtk
-	sudo mount /dev/sdc1 /mnt
-	- sudo cp outputs/rtk /mnt/rtk
-	sudo umount /mnt
 
 run_tftpd: buildroot_bb
 	$(MAKE) -C $(BBBUILDROOT) run_tftpd
