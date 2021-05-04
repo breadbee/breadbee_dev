@@ -72,6 +72,19 @@
 				algo = "sha1";
 			};
 		};
+		fdt@4 {
+			data = /incbin/("linux/arch/arm/boot/dts/mstar-infinity2m-ssd202d-unitv2.dtb");
+			type = "flat_dt";
+			arch = "arm";
+			compression = "none";
+			load = <0x22d00000>;
+			hash@1 {
+				algo = "crc32";
+			};
+			hash@2 {
+				algo = "sha1";
+			};
+		};
 		ramdisk@0 {
 			data = /incbin/("m5buildroot/buildroot/output/images/rootfs.cpio.gz");
 			type = "ramdisk";
@@ -104,6 +117,10 @@
 			kernel = "kernel@0";
 			fdt = "fdt@2";
 			ramdisk = "ramdisk@0";
+		};
+		gw302_nord {
+			kernel = "kernel@0";
+			fdt = "fdt@2";
 		};
 		ssd201htv2 {
 			kernel = "kernel@0";

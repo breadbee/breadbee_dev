@@ -1,7 +1,17 @@
 BUILDROOT_GW30X=$(shell realpath ./buildroot_gw30x)
+BUILDROOT_IDOSOM2D01=$(shell realpath buildroot_idosom2d01)
 
 buildroot-gw30x:
 	$(MAKE) -C $(BUILDROOT_GW30X)
+
+buildroot-idosom2d01:
+	$(MAKE) -C $(BUILDROOT_IDOSOM2D01)
+
+buildroot-idosom2d01-rescue:
+	$(MAKE) -C $(BUILDROOT_IDOSOM2D01) buildroot-rescue
+
+buildroot-idosom2d01-rescue-clean:
+	$(MAKE) -C $(BUILDROOT_IDOSOM2D01) buildroot-rescue-clean
 
 uboot-gw302:
 	$(MAKE) -C u-boot clean
@@ -10,6 +20,7 @@ uboot-gw302:
 	PATH=$(BUILDROOT)/output/host/bin:$$PATH \
 		$(MAKE) -C u-boot CROSS_COMPILE=$(CROSS_COMPILE) -j8
 	cp u-boot/ipl $(OUTPUTS)/gw302-ipl
+	cp u-boot/u-boot.img $(OUTPUTS)/gw302-u-boot.img
 
 # This builds kernel image with the DTB appended to the end for the ssd201htv2 with
 # vendor u-boot

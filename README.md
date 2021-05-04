@@ -86,6 +86,23 @@ This builds a generic kernel for ssd20xd machines with an updated u-boot
 setenv serverip 192.168.3.235; setenv loadaddr 0x22000000; dhcp dev_kernel_ssd20xd.fit; bootm ${loadaddr}
 ```
 
+#### For gw302:
+
+##### With the built in initramfs for debugging
+
+```
+setenv serverip 192.168.3.235; setenv loadaddr 0x22000000; dhcp dev_kernel_ssd20xd.fit; bootm ${loadaddr}#gw302
+```
+
+##### Without the built in initramfs, use NAND partitions.
+
+```
+setenv serverip 192.168.3.235; setenv loadaddr 0x22000000; dhcp dev_kernel_ssd20xd.fit; bootm ${loadaddr}#gw302_nord 
+```
+
+```
+setenv serverip 192.168.3.235; setenv loadaddr 0x22000000; dhcp dev_kernel_ssd20xd.fit; bootm ${loadaddr}#som2d01_ssd202
+```
 
 ### kernel_mcf50
 
